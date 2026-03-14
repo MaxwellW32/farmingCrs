@@ -1,10 +1,13 @@
 import { relations } from "drizzle-orm";
 import { boolean, timestamp, pgTable, text, primaryKey, integer, index, json } from "drizzle-orm/pg-core"
 import type { AdapterAccountType } from "@auth/core/adapters"
+import { branchType } from "@/types";
+import { defaultText } from "@/lib/defaultData";
 
 export const users = pgTable("users", {
     //defaults
     id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    companyName: text("companyName").notNull().default(defaultText),
 
     //regular
 
@@ -15,29 +18,32 @@ export const users = pgTable("users", {
     image: text("image"),
 })
 export const userRelations = relations(users, ({ many }) => ({
-    // books: many(books),
+    branches: many(branches),
 }));
 
 
 
 
-// export const books = pgTable("books", {
-//     id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-//     dateCreated: timestamp("dateCreated", { mode: "date" }).notNull().defaultNow(),
+export const branches = pgTable("branches", {
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    dateCreated: timestamp("dateCreated", { mode: "date" }).notNull().defaultNow(),
+    crops: json("crops").$type<branchType["crops"]>().default([]).notNull(),
 
-//     userId: text("userId").notNull().references(() => users.id),
-// },
-//     (table) => {
-//         return {
-//             bookUserIdIndex: index("bookUserIdIndex").on(table.userId),
-//         };
-//     })
-// export const bookRelations = relations(books, ({ one, many }) => ({
-//     fromUser: one(users, {
-//         fields: [books.userId],
-//         references: [users.id]
-//     }),
-// }));
+    userId: text("userId").notNull().references(() => users.id),
+    name: text("name").notNull(),
+    boundingPins: json("boundingPins").$type<branchType["boundingPins"]>().default([]).notNull(),
+},
+    (table) => {
+        return {
+            branchUserIdIndex: index("branchUserIdIndex").on(table.userId),
+        };
+    })
+export const branchRelations = relations(branches, ({ one, many }) => ({
+    fromUser: one(users, {
+        fields: [branches.userId],
+        references: [users.id]
+    }),
+}));
 
 
 

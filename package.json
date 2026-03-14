@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node server.js",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production node server.js",
+    "deploy": "sh deploy.sh",
     "lint": "eslint"
   },
   "dependencies": {
@@ -24,7 +25,8 @@
     "react-dom": "19.2.3",
     "react-hot-toast": "^2.6.0",
     "uuid": "^13.0.0",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "ws": "^8.18.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

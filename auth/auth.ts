@@ -49,4 +49,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         verificationTokensTable: verificationTokens,
         authenticatorsTable: authenticators
     }),
+    // pages: {
+    //     signIn: "/login"
+    // }
 })

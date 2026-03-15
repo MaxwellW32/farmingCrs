@@ -13,7 +13,7 @@ interface StatsData {
 export function StatsCards({ stats }: { stats: StatsData }) {
   const statItems = [
     {
-      label: "Farm Branches",
+      label: "Farm Branche(s)",
       value: stats.totalBranches,
       icon: TreeDeciduous,
       description: "Active farm locations",

@@ -55,7 +55,7 @@ export async function getSpecificBranch(branchId: branchType["id"], runAuth = tr
     return result
 }
 
-export async function getBranchs(filter: tableFilterTypes<branchType>, getWith?: { [key in keyof branchType]?: true }, limit = 50, offset = 0): Promise<branchType[]> {
+export async function getBranches(filter: tableFilterTypes<branchType>, getWith?: { [key in keyof branchType]?: true }, limit = 50, offset = 0): Promise<branchType[]> {
     // Auth check
 
     //compile filters into proper where clauses

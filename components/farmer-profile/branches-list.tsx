@@ -5,19 +5,23 @@ import { MapPin, Wheat, Droplets, Sun, ArrowRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { branchType, cropType } from "@/types"
+import React, { useEffect, useState } from "react"
+import { consoleAndToastError } from "@/utility/consoleErrorWithToast"
+import { getCrops } from "@/serverFunctions/handleCrops"
 
-interface Branch {
-  id: string
-  name: string
-  location: string
-  acres: number
-  crops: string[]
-  status: "active" | "seasonal" | "developing"
-  irrigation: string
-}
+// interface Branch {
+//   id: string
+//   name: string
+//   location: string
+//   acres: number
+//   crops: string[]
+//   status: "active" | "seasonal" | "developing"
+//   irrigation: string
+// }
 
-export function BranchesList({ branches }: { branches: Branch[] }) {
-  const getStatusColor = (status: Branch["status"]) => {
+export function BranchesList({ branches }: { branches: branchType[] }) {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
         return "bg-primary text-primary-foreground"
@@ -28,6 +32,23 @@ export function BranchesList({ branches }: { branches: Branch[] }) {
     }
   }
 
+  const [crops, cropsSet] = useState<cropType[] | undefined>()
+
+  //get crops
+  useEffect(() => {
+    const search = async () => {
+      try {
+        const seenCrops = await getCrops({})
+        cropsSet(seenCrops)
+
+      } catch (error) {
+        consoleAndToastError(error)
+      }
+    }
+    search()
+
+  }, [])
+
   return (
     <Card className="bg-card border-border">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -36,13 +57,15 @@ export function BranchesList({ branches }: { branches: Branch[] }) {
           Farm Branches
         </CardTitle>
         <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary/80 hover:bg-primary/10">
-          <Link href="/branches">
+          <Link href="/profile/branches">
             View All
             <ArrowRight className="size-4 ml-1" />
           </Link>
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
+        {branches.length === 0 && <p>no branches yet</p>}
+
         {branches.map((branch) => (
           <div
             key={branch.id}
@@ -52,33 +75,45 @@ export function BranchesList({ branches }: { branches: Branch[] }) {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-lg font-semibold text-foreground">{branch.name}</h3>
-                  <Badge className={getStatusColor(branch.status)}>
-                    {branch.status.charAt(0).toUpperCase() + branch.status.slice(1)}
+                  <Badge className={getStatusColor("active")}>
+                    {"active"}
                   </Badge>
                 </div>
-                
+
                 <div className="flex items-center gap-2 text-muted-foreground mb-3">
                   <MapPin className="size-4" />
                   <span className="text-sm">{branch.location}</span>
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2">
-                  {branch.crops.map((crop) => (
-                    <Badge key={crop} variant="outline" className="border-border text-muted-foreground">
-                      {crop}
-                    </Badge>
-                  ))}
+                  {crops === undefined ? (<p>loading crops</p>) : (
+                    <>
+                      {branch.cropIds.map((eachcropId) => {
+                        const foundCrop = crops.find(eachCrop => eachCrop.id === eachcropId.referencedCropId)
+                        return (
+                          <React.Fragment key={eachcropId.id}>
+                            {foundCrop === undefined ? (<p>not seeing crop</p>) : (
+                              <Badge variant="outline" className="border-border text-muted-foreground">
+                                {foundCrop.name}
+                              </Badge>
+                            )}
+
+                          </React.Fragment>
+                        )
+                      })}
+                    </>
+                  )}
                 </div>
               </div>
-              
+
               <div className="flex flex-row sm:flex-col gap-4 sm:gap-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Sun className="size-4 text-accent" />
-                  <span>{branch.acres} acres</span>
+                  <span>{"2"} acres</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Droplets className="size-4 text-primary" />
-                  <span>{branch.irrigation}</span>
+                  <span>Micro-sprinkler</span>
                 </div>
               </div>
             </div>

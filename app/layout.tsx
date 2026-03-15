@@ -5,6 +5,7 @@ import { auth } from "@/auth/auth";
 import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/navbar/Navbar";
 import { Analytics } from '@vercel/analytics/next'
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,10 +52,13 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Toaster position="top-center" reverseOrder={false} />
-        <Navbar session={session} />
-        {children}
-        <Analytics />
+        <SessionProvider session={session}>
+
+          <Toaster position="top-center" reverseOrder={false} />
+          <Navbar session={session} />
+          {children}
+          <Analytics />
+        </SessionProvider>
       </body>
     </html>
   );

@@ -4,64 +4,30 @@ import { BranchesList } from "@/components/farmer-profile/branches-list"
 import { AboutSection } from "@/components/farmer-profile/about-section"
 import { SidebarNav } from "@/components/farmer-profile/sidebar-nav"
 import { Tractor } from "lucide-react"
+import { userType } from "@/types"
+import { getSpecificUser } from "@/serverFunctions/handleUsers"
+import { auth } from "@/auth/auth"
+import defaultProfilePic from "@/public/defaultProfileImage.jpg"
+import { getBranches } from "@/serverFunctions/handleBranches"
 
 // Sample farmer data
-const farmerData = {
-  name: "James Whitfield",
-  role: "Organic Crop Farmer & Agricultural Consultant",
-  location: "Sacramento Valley, California",
-  email: "james@whitfieldfarms.com",
-  phone: "+1 (530) 555-0142",
-  memberSince: "March 2019",
-  avatar: "/placeholder-avatar.jpg",
-  verified: true,
-}
+// const farmerData = {
+//   name: "James Whitfield",
+//   role: "Organic Crop Farmer & Agricultural Consultant",
+//   location: "Sacramento Valley, California",
+//   email: "james@whitfieldfarms.com",
+//   phone: "+1 (530) 555-0142",
+//   memberSince: "March 2019",
+//   avatar: "/placeholder-avatar.jpg",
+//   verified: true,
+// }
 
-const statsData = {
-  totalBranches: 4,
-  totalAcres: 2850,
-  employees: 47,
-  yearlyYield: "12,500 tons",
-}
-
-const branchesData = [
-  {
-    id: "1",
-    name: "North Valley Farm",
-    location: "Yolo County, CA",
-    acres: 850,
-    crops: ["Organic Tomatoes", "Bell Peppers", "Squash"],
-    status: "active" as const,
-    irrigation: "Drip System",
-  },
-  {
-    id: "2",
-    name: "River Delta Estate",
-    location: "Sacramento County, CA",
-    acres: 1200,
-    crops: ["Rice", "Corn", "Soybeans"],
-    status: "active" as const,
-    irrigation: "Flood Irrigation",
-  },
-  {
-    id: "3",
-    name: "Highland Orchards",
-    location: "Placer County, CA",
-    acres: 500,
-    crops: ["Almonds", "Walnuts", "Peaches"],
-    status: "seasonal" as const,
-    irrigation: "Micro-sprinkler",
-  },
-  {
-    id: "4",
-    name: "Southside Fields",
-    location: "San Joaquin County, CA",
-    acres: 300,
-    crops: ["Wheat", "Barley"],
-    status: "developing" as const,
-    irrigation: "Center Pivot",
-  },
-]
+// const statsData = {
+//   totalBranches: 4,
+//   totalAcres: 2850,
+//   employees: 47,
+//   yearlyYield: "12,500 tons",
+// }
 
 const aboutData = {
   bio: "With over 25 years of experience in sustainable agriculture, I have dedicated my life to cultivating quality crops while preserving the land for future generations. My journey began on my family's small farm in the Central Valley, and has since grown into a network of four thriving agricultural operations across Northern California.",
@@ -80,7 +46,15 @@ const aboutData = {
   ],
 }
 
-export default function FarmerProfilePage() {
+export default async function FarmerProfilePage() {
+  const session = await auth()
+  if (session === null) return (<p>no session</p>)
+
+  const user = await getSpecificUser(session.user.id)
+  if (user === undefined) return (<p>user not seen</p>)
+
+  const branches = await getBranches({ userId: user.id })
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -96,19 +70,33 @@ export default function FarmerProfilePage() {
           <main className="space-y-8">
             {/* Profile Header */}
             <section className="pb-8 border-b border-border">
-              <ProfileHeader farmer={farmerData} />
+              <ProfileHeader farmer={{
+                avatar: user.image === null ? defaultProfilePic.src : user.image,
+                email: user.email === null ? "johndoe@gmail.com" : user.email,
+                location: "jamaica",
+                memberSince: "1 day ago",
+                name: user.name === null ? "john doe" : user.name,
+                phone: "phone",
+                role: "farmer",
+                verified: true
+              }} />
             </section>
 
             {/* Stats */}
             <section>
-              <StatsCards stats={statsData} />
+              <StatsCards stats={{
+                totalBranches: branches.length,
+                totalAcres: branches.length * 2, //will have function to calculate acre by branch coordinates
+                yearlyYield: "12,500 tons",
+                employees: 0,
+              }} />
             </section>
 
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-8">
               {/* Branches */}
               <section>
-                <BranchesList branches={branchesData} />
+                <BranchesList branches={branches} />
               </section>
 
               {/* About */}

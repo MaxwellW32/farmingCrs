@@ -1,4 +1,4 @@
-import { auth } from "@/auth/auth"
+import ReadBranch from "@/components/branches/ReadBranch"
 import { getSpecificBranch } from "@/serverFunctions/handleBranches"
 
 export default async function Page({ params }: { params: Promise<{ id: string[] }> }) {
@@ -8,11 +8,7 @@ export default async function Page({ params }: { params: Promise<{ id: string[] 
     const seenBranch = await getSpecificBranch(branchId)
     if (seenBranch === undefined) return (<p>not seeing branch by id</p>)
 
-    const session = await auth();
-    if (session === null) return null
-
     return (
-        <>{seenBranch.name}</>
-        // <ReaddBranch seenUser={session.user} seendBranch={seendBranch} />
+        <ReadBranch seenBranch={seenBranch} />
     )
 }

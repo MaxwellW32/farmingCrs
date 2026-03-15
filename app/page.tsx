@@ -100,10 +100,11 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap items-center gap-4">
               <Button size="lg" className="bg-primary hover:bg-primary/90" asChild>
-                <Link href="/signup">Get Started</Link>
+                <Link href="/login">Get Started</Link>
               </Button>
+
               <Button size="lg" variant="outline" className="border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white" asChild>
-                <Link href="/dashboard">Watch Demo</Link>
+                <Link href="/demo">Watch Demo</Link>
               </Button>
             </div>
           </div>
@@ -216,7 +217,7 @@ export default function Home() {
             Ready to Transform Your Farm?
           </h2>
           <p className="mx-auto mb-8 max-w-2xl text-muted-foreground">
-            Join thousands of farmers already using AgriSense to increase yields and reduce costs.
+            Join thousands of farmers already using Farming CRS to increase yields and reduce costs.
           </p>
           <Button size="lg" asChild>
             <Link href="/signup">
@@ -235,10 +236,10 @@ export default function Home() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <Leaf className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="font-semibold text-foreground">AgriSense</span>
+              <span className="font-semibold text-foreground">Farming CRS</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              2026 AgriSense. All rights reserved.
+              2026 Farming CRS. All rights reserved.
             </p>
           </div>
         </div>

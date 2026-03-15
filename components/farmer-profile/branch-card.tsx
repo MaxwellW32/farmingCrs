@@ -4,27 +4,32 @@ import { MapPin, Droplets, Sun, Users, TrendingUp, Calendar, Leaf, ThermometerSu
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { branchType, cropType } from "@/types"
+import React, { useEffect, useState } from "react"
+import { getCrops } from "@/serverFunctions/handleCrops"
+import { consoleAndToastError } from "@/utility/consoleErrorWithToast"
+import Link from "next/link"
 
-export interface BranchDetail {
-  id: string
-  name: string
-  location: string
-  acres: number
-  crops: string[]
-  status: "active" | "seasonal" | "developing"
-  irrigation: string
-  employees: number
-  established: string
-  soilType: string
-  climate: string
-  lastHarvest: string
-  nextPlanting: string
-  yieldPerAcre: string
-  image: string
-}
+// export interface BranchDetail {
+//   id: string
+//   name: string
+//   location: string
+//   acres: number
+//   crops: string[]
+//   status: "active" | "seasonal" | "developing"
+//   irrigation: string
+//   employees: number
+//   established: string
+//   soilType: string
+//   climate: string
+//   lastHarvest: string
+//   nextPlanting: string
+//   yieldPerAcre: string
+//   image: string
+// }
 
-export function BranchCard({ branch }: { branch: BranchDetail }) {
-  const getStatusColor = (status: BranchDetail["status"]) => {
+export function BranchCard({ branch }: { branch: branchType }) {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
         return "bg-primary text-primary-foreground"
@@ -35,21 +40,39 @@ export function BranchCard({ branch }: { branch: BranchDetail }) {
     }
   }
 
+
+  const [crops, cropsSet] = useState<cropType[] | undefined>()
+
+  //get crops
+  useEffect(() => {
+    const search = async () => {
+      try {
+        const seenCrops = await getCrops({})
+        cropsSet(seenCrops)
+
+      } catch (error) {
+        consoleAndToastError(error)
+      }
+    }
+    search()
+
+  }, [])
+
   return (
     <Card className="bg-card border-border overflow-hidden hover:border-primary/50 transition-all duration-300 group">
       {/* Image Header */}
       <div className="relative h-48 bg-secondary overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-          style={{ 
-            backgroundImage: `url(${branch.image})`,
+          style={{
+            backgroundImage: `url()`,
             backgroundColor: 'oklch(0.25 0.03 145)'
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
         <div className="absolute top-4 left-4">
-          <Badge className={getStatusColor(branch.status)}>
-            {branch.status.charAt(0).toUpperCase() + branch.status.slice(1)}
+          <Badge className={getStatusColor("active")}>
+            active
           </Badge>
         </div>
         <div className="absolute bottom-4 left-4 right-4">
@@ -68,28 +91,28 @@ export function BranchCard({ branch }: { branch: BranchDetail }) {
             <Sun className="size-5 text-accent" />
             <div>
               <p className="text-xs text-muted-foreground">Total Area</p>
-              <p className="font-semibold text-foreground">{branch.acres} acres</p>
+              <p className="font-semibold text-foreground">{2} acres</p>
             </div>
           </div>
           <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
             <Users className="size-5 text-primary" />
             <div>
               <p className="text-xs text-muted-foreground">Workers</p>
-              <p className="font-semibold text-foreground">{branch.employees}</p>
+              <p className="font-semibold text-foreground">{2}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
             <Droplets className="size-5 text-primary" />
             <div>
               <p className="text-xs text-muted-foreground">Irrigation</p>
-              <p className="font-semibold text-foreground text-sm">{branch.irrigation}</p>
+              <p className="font-semibold text-foreground text-sm">Drip System</p>
             </div>
           </div>
           <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
             <TrendingUp className="size-5 text-accent" />
             <div>
               <p className="text-xs text-muted-foreground">Yield/Acre</p>
-              <p className="font-semibold text-foreground">{branch.yieldPerAcre}</p>
+              <p className="font-semibold text-foreground">2 tons</p>
             </div>
           </div>
         </div>
@@ -101,11 +124,19 @@ export function BranchCard({ branch }: { branch: BranchDetail }) {
             Crops Grown
           </p>
           <div className="flex flex-wrap gap-2">
-            {branch.crops.map((crop) => (
-              <Badge key={crop} variant="outline" className="border-primary/30 text-foreground bg-primary/10">
-                {crop}
-              </Badge>
-            ))}
+            {crops !== undefined && branch.cropIds.map((eachcropId) => {
+              const foundCrop = crops.find(eachCrop => eachCrop.id === eachcropId.referencedCropId)
+              return (
+                <React.Fragment key={eachcropId.id}>
+                  {foundCrop === undefined ? (<p>not seeing crop</p>) : (
+                    <Badge variant="outline" className="border-border text-muted-foreground">
+                      {foundCrop.name}
+                    </Badge>
+                  )}
+
+                </React.Fragment>
+              )
+            })}
           </div>
         </div>
 
@@ -116,32 +147,29 @@ export function BranchCard({ branch }: { branch: BranchDetail }) {
               <ThermometerSun className="size-3" />
               Climate
             </p>
-            <p className="text-sm text-foreground">{branch.climate}</p>
+            <p className="text-sm text-foreground">Warm Summer</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground mb-1">Soil Type</p>
-            <p className="text-sm text-foreground">{branch.soilType}</p>
+            <p className="text-sm text-foreground">Sandy Loam</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
               <Calendar className="size-3" />
               Last Harvest
             </p>
-            <p className="text-sm text-foreground">{branch.lastHarvest}</p>
+            <p className="text-sm text-foreground">March 2026</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground mb-1">Next Planting</p>
-            <p className="text-sm text-foreground">{branch.nextPlanting}</p>
+            <p className="text-sm text-foreground">May 2026</p>
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex gap-3 pt-2">
-          <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
-            View Details
-          </Button>
-          <Button variant="outline" className="flex-1 border-border text-foreground hover:bg-secondary">
-            Manage
+          <Button variant="outline" className="flex-1 border-border text-foreground hover:bg-secondary" style={{ cursor: "pointer" }}>
+            <Link href={`/branches/${branch.id}`}>Manage</Link>
           </Button>
         </div>
       </CardContent>

@@ -8,6 +8,7 @@ export const users = pgTable("users", {
     //defaults
     id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     companyName: text("companyName").notNull().default(defaultText),
+    phoneNumber: text("phoneNumber").notNull().default(""),
 
     //regular
 
@@ -33,6 +34,7 @@ export const branches = pgTable("branches", {
     userId: text("userId").notNull().references(() => users.id),
     name: text("name").notNull(),
     boundingPins: json("boundingPins").$type<branchType["boundingPins"]>().default([]).notNull(),
+    location: text("location").notNull(),
 },
     (table) => {
         return {

@@ -324,16 +324,15 @@ async def get_single_crop_status(crop_id: str, temp: float, humidity: float):
         if not crop:
             raise HTTPException(status_code=404, detail="Crop not found in database")
 
-        # 1. Calculate Health Metrics
+
         vpd = calculate_vpd(temp, humidity)
         
-        # 2. Check "Comfort Zones"
+    
         temp_status = "OPTIMAL" if crop.optLow <= temp <= crop.optHigh else "STRESS"
         if temp < crop.minTemp or temp > crop.maxTemp:
             temp_status = "CRITICAL"
 
-        # 3. Generate Crop-Specific AI Insight
-        # We pass only this crop to the AI for a specialized medical-style report
+        
         stats = {"temperature": temp, "humidity": humidity, "vpd": vpd}
         
         # We simulate a single alert for the AI to react to if status isn't optimal
@@ -364,20 +363,20 @@ async def check_crop_at_location(crop_name: str, lat: float, lon: float):
     Checks if a specific crop can survive the current real-world 
     weather at the provided coordinates.
     """
-    # 1. Fetch real-time weather for the location
+    
     weather_data = await get_weather(lat, lon)
     stats = weather_data["stats"]
     temp = stats["temperature"]
     humidity = stats["humidity"]
 
     with SessionLocal() as db:
-        # 2. Fuzzy search for the crop
+        
         crop = db.query(Crops).filter(Crops.name.ilike(f"%{crop_name}%")).first()
         
         if not crop:
             raise HTTPException(status_code=404, detail=f"Crop '{crop_name}' not found.")
 
-        # 3. Run the Biological Logic
+        
         vpd = calculate_vpd(temp, humidity)
         
         status = "OPTIMAL"

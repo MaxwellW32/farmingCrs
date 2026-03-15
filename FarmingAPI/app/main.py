@@ -13,6 +13,7 @@ origins = [
     "http://localhost:5173", # Common for Vite/Vue/React
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
+    "https://squaremaxtech.com",
     # Add your production domain here later
 ]
 

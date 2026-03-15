@@ -1,5 +1,3 @@
-"use client"
-
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -14,32 +12,8 @@ import {
   Check,
   Sprout,
 } from "lucide-react"
-import { consoleAndToastError } from "@/utility/consoleErrorWithToast"
-import { useEffect } from "react"
 
 export default function Home() {
-  useEffect(() => {
-    const search = async () => {
-      try {
-        //get api test
-        const base = process.env.NEXT_PUBLIC_PY_API;
-        console.log(`$base`, base);
-
-        const rcCropsRes = await fetch(
-          `${base}/crs-analysis?lat=18.00099&lon=-76.82816`
-        );
-        const recCrops = await rcCropsRes.json()
-        console.log(`$recCrops`, recCrops);
-
-      } catch (error) {
-        consoleAndToastError(error)
-      }
-    }
-
-    search()
-
-  }, [])
-
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}

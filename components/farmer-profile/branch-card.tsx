@@ -168,11 +168,13 @@ export function BranchCard({ branch }: { branch: branchType }) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-2">
-          <Button variant="outline" className="flex-1 border-border text-foreground hover:bg-secondary" style={{ cursor: "pointer" }}>
-            <Link href={`/branches/${branch.id}`}>Manage</Link>
-          </Button>
-        </div>
+        <Link href={`/branches/${branch.id}`}>
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" className="flex-1 border-border text-foreground hover:bg-secondary" style={{ cursor: "pointer" }}>
+              Manage
+            </Button>
+          </div>
+        </Link>
       </CardContent>
     </Card>
   )

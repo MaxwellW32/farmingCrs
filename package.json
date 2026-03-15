@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npx concurrently -n NEXT,PYTHON \"node server.js\" \"cd FarmingAPI && py -m uvicorn app.main:app --reload || python -m uvicorn app.main:app --reload\"",
+    "dev": "node server.js",
     "build": "next build",
-    "start": "npx concurrently -n NEXT,PYTHON \"NODE_ENV=production node server.js\" \"cd FarmingAPI && python -m uvicorn app.main:app\"",
+    "start": "NODE_ENV=production node server.js",
     "deploy": "sh deploy.sh",
     "lint": "eslint"
   },

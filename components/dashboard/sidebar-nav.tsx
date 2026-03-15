@@ -22,10 +22,8 @@ const navigation = [
   { name: "Fields", href: "/dashboard/fields", icon: MapPin },
   { name: "Weather", href: "/dashboard/weather", icon: Cloud },
   { name: "Irrigation", href: "/dashboard/irrigation", icon: Droplets },
-  { name: "Pest Control", href: "/dashboard/pests", icon: Bug },
-  { name: "Calendar", href: "/dashboard/calendar", icon: Calendar },
   { name: "Reports", href: "/dashboard/reports", icon: BarChart3 },
-  { name: "Documents", href: "/dashboard/documents", icon: FileText },
+  { name: "Soil", href: "/dashboard/soil", icon: FileText },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 

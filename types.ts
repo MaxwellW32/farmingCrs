@@ -46,15 +46,25 @@ export const monitorEventSchema = z.object({
     typeObj: z.union([
         z.object({
             type: z.literal("elevation"),
+            elevation: z.string()
         }),
         z.object({
-            type: z.literal("soil-condition")
+            type: z.literal("soil-condition"),
+            status: z.string()
+        }),
+        z.object({
+            type: z.literal("humidity"),
+            humidity: z.number()
+        }),
+        z.object({
+            type: z.literal("temperature"),
+            temperature: z.number(),
         }),
     ]),
     coordinates: coordinatesSchema,
     size: z.number()
 })
-export type branchEventType = z.infer<typeof monitorEventSchema>
+export type monitorEventType = z.infer<typeof monitorEventSchema>
 
 
 
@@ -138,6 +148,7 @@ export const branchSchema = z.object({
     cropIds: z.object({
         id: z.string().min(1),
         referencedCropId: z.string().min(1),
+        corrdinates: coordinatesSchema
     }).array(),
     branchEvents: monitorEventSchema.array(),
 

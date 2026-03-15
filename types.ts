@@ -18,18 +18,22 @@ export const coordinatesSchema = z.object({
 
 
 //other types
+//handle search
+export type tableFilterTypes<T> = {
+    [key in keyof T]?: T[key]
+}
+
+export type searchObjType<T> = {
+    searchItems: T[],
+    loading?: true,
+    limit?: number, //how many
+    offset?: number, //increaser
+    incrementOffsetBy?: number, //how much to increase by
+    refreshAll?: boolean
+}
 
 
 
-
-//types for db
-export const cropSchema = z.object({
-    id: z.string().min(1),
-    name: z.string().min(1),
-    recSoilTemp: z.string().min(1),//in degrees
-    recElevation: z.number(),//in meters
-})
-export type cropType = z.infer<typeof cropSchema>
 
 export const boundingPinSchema = z.object({
     coordinates: coordinatesSchema,
@@ -114,6 +118,7 @@ export const userSchema = z.object({
     image: z.string().min(1).nullable(),
 })
 export type userType = z.infer<typeof userSchema> & {
+    branches?: branchType[]
 }
 
 export const newUserSchema = userSchema.omit({ id: true })
@@ -128,7 +133,9 @@ export type updateUserType = z.infer<typeof updateUserSchema>
 export const branchSchema = z.object({
     id: z.string().min(1, "please add a user id"),
     dateCreated: dateSchema,
-    crops: cropSchema.array(),
+    cropIds: z.object({
+        cropId: z.string().min(1),
+    }).array(),
     branchEvents: monitorEventSchema.array(),
 
     userId: userSchema.shape.id,
@@ -136,6 +143,7 @@ export const branchSchema = z.object({
     boundingPins: boundingPinSchema.array().min(3),
 })
 export type branchType = z.infer<typeof branchSchema> & {
+    fromUser?: userType,
 }
 
 export const newBranchSchema = branchSchema.omit({ id: true, dateCreated: true })
@@ -143,3 +151,24 @@ export type newBranchType = z.infer<typeof newBranchSchema>
 
 export const updateBranchSchema = branchSchema.omit({ id: true, dateCreated: true, userId: true })
 export type updateBranchType = z.infer<typeof updateBranchSchema>
+
+
+
+export const cropSchema = z.object({
+    id: z.string().min(1),
+
+    name: z.string().min(1),
+    minTemp: z.number(),
+    maxTemp: z.number(),
+    optLow: z.number(),
+    optHigh: z.number(),
+    idealHumidity: z.number(),
+})
+export type cropType = z.infer<typeof cropSchema> & {
+}
+
+export const newCropSchema = cropSchema.omit({ id: true })
+export type newCropType = z.infer<typeof newCropSchema>
+
+export const updateCropSchema = cropSchema.omit({ id: true })
+export type updateCropType = z.infer<typeof updateCropSchema>

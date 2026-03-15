@@ -15,6 +15,7 @@ import {
 } from '@headlessui/react'
 import {
     Bars3Icon,
+    SquaresPlusIcon,
     XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
@@ -38,18 +39,18 @@ const menu: {
     }[],
     callsToAction?: { name: string, href: string, icon: ComponentType<SVGProps<SVGSVGElement>> }[]
 }[] = [
-        // {
-        //     name: 'books',
-        //     href: '/books',
-        //     icon: SquaresPlusIcon,
-        //     // subMenu: [
-        //     //     { name: 'Analytics', description: 'Get a better understanding of your traffic', href: '#', icon: ChartPieIcon },
-        //     //     { name: 'Engagement', description: 'Speak directly to your customers', href: '#', icon: CursorArrowRaysIcon },
-        //     //     { name: 'Security', description: 'Your customers’ data will be safe and secure', href: '#', icon: FingerPrintIcon },
-        //     //     { name: 'Integrations', description: 'Connect with third-party tools', href: '#', icon: SquaresPlusIcon },
-        //     //     { name: 'Automations', description: 'Build strategic funnels that will convert', href: '#', icon: ArrowPathIcon },
-        //     // ]
-        // },
+        {
+            name: 'profile',
+            href: '/profile',
+            icon: SquaresPlusIcon,
+            // subMenu: [
+            //     { name: 'Analytics', description: 'Get a better understanding of your traffic', href: '#', icon: ChartPieIcon },
+            //     { name: 'Engagement', description: 'Speak directly to your customers', href: '#', icon: CursorArrowRaysIcon },
+            //     { name: 'Security', description: 'Your customers’ data will be safe and secure', href: '#', icon: FingerPrintIcon },
+            //     { name: 'Integrations', description: 'Connect with third-party tools', href: '#', icon: SquaresPlusIcon },
+            //     { name: 'Automations', description: 'Build strategic funnels that will convert', href: '#', icon: ArrowPathIcon },
+            // ]
+        },
         // { //products example
         //     name: 'products',
         //     href: '/products',

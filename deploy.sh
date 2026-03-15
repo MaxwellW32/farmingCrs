@@ -13,7 +13,7 @@ npm install
 npm run build
 
 # Restart the PM2 process
-pm2 stop squaremax
-pm2 start squaremax
+pm2 stop farmingCrs
+pm2 start farmingCrs
 
 echo "Deployment complete."

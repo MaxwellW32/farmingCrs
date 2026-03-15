@@ -24,7 +24,7 @@ export function ProfileHeader({ farmer }: { farmer: FarmerInfo }) {
           {farmer.name.split(' ').map(n => n[0]).join('')}
         </AvatarFallback>
       </Avatar>
-      
+
       <div className="flex-1">
         <div className="flex flex-wrap items-center gap-3 mb-2">
           <h1 className="text-4xl font-bold tracking-tight text-balance">{farmer.name}</h1>
@@ -32,9 +32,9 @@ export function ProfileHeader({ farmer }: { farmer: FarmerInfo }) {
             <Badge className="bg-primary text-primary-foreground">Verified Farmer</Badge>
           )}
         </div>
-        
+
         <p className="text-xl text-muted-foreground mb-6">{farmer.role}</p>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-muted-foreground">
           <div className="flex items-center gap-2">
             <MapPin className="size-4 text-primary" />

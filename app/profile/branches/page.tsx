@@ -1,90 +1,102 @@
-import { Tractor, Wheat, Plus, Filter, Search } from "lucide-react"
-import { BranchCard, type BranchDetail } from "@/components/farmer-profile/branch-card"
+import { Wheat, Plus, Filter, Search } from "lucide-react"
+import { BranchCard } from "@/components/farmer-profile/branch-card"
 import { SidebarNav } from "@/components/farmer-profile/sidebar-nav"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { auth } from "@/auth/auth"
+import { getSpecificUser } from "@/serverFunctions/handleUsers"
+import { getBranches } from "@/serverFunctions/handleBranches"
+import AddBranch from "@/components/branches/AddBranch"
 
 // Extended branch data with more details
-const branchesData: BranchDetail[] = [
-  {
-    id: "1",
-    name: "North Valley Farm",
-    location: "Yolo County, CA",
-    acres: 850,
-    crops: ["Organic Tomatoes", "Bell Peppers", "Squash", "Zucchini"],
-    status: "active",
-    irrigation: "Drip System",
-    employees: 18,
-    established: "2012",
-    soilType: "Loamy Clay",
-    climate: "Mediterranean",
-    lastHarvest: "Feb 2026",
-    nextPlanting: "Apr 2026",
-    yieldPerAcre: "22 tons",
-    image: "/north-valley-farm.jpg",
-  },
-  {
-    id: "2",
-    name: "River Delta Estate",
-    location: "Sacramento County, CA",
-    acres: 1200,
-    crops: ["Rice", "Corn", "Soybeans", "Sunflower"],
-    status: "active",
-    irrigation: "Flood Irrigation",
-    employees: 15,
-    established: "2008",
-    soilType: "Alluvial",
-    climate: "Warm Temperate",
-    lastHarvest: "Jan 2026",
-    nextPlanting: "Mar 2026",
-    yieldPerAcre: "8 tons",
-    image: "/river-delta-estate.jpg",
-  },
-  {
-    id: "3",
-    name: "Highland Orchards",
-    location: "Placer County, CA",
-    acres: 500,
-    crops: ["Almonds", "Walnuts", "Peaches", "Plums"],
-    status: "seasonal",
-    irrigation: "Micro-sprinkler",
-    employees: 8,
-    established: "2015",
-    soilType: "Sandy Loam",
-    climate: "Warm Summer",
-    lastHarvest: "Oct 2025",
-    nextPlanting: "Dormant",
-    yieldPerAcre: "3.5 tons",
-    image: "/highland-orchards.jpg",
-  },
-  {
-    id: "4",
-    name: "Southside Fields",
-    location: "San Joaquin County, CA",
-    acres: 300,
-    crops: ["Wheat", "Barley", "Oats"],
-    status: "developing",
-    irrigation: "Center Pivot",
-    employees: 6,
-    established: "2024",
-    soilType: "Silty Clay",
-    climate: "Hot Summer",
-    lastHarvest: "New Site",
-    nextPlanting: "May 2026",
-    yieldPerAcre: "TBD",
-    image: "/southside-fields.jpg",
-  },
-]
+// const branchesData: BranchDetail[] = [
+//   {
+//     id: "1",
+//     name: "North Valley Farm",
+//     location: "Yolo County, CA",
+//     acres: 850,
+//     crops: ["Organic Tomatoes", "Bell Peppers", "Squash", "Zucchini"],
+//     status: "active",
+//     irrigation: "Drip System",
+//     employees: 18,
+//     established: "2012",
+//     soilType: "Loamy Clay",
+//     climate: "Mediterranean",
+//     lastHarvest: "Feb 2026",
+//     nextPlanting: "Apr 2026",
+//     yieldPerAcre: "22 tons",
+//     image: "/north-valley-farm.jpg",
+//   },
+//   {
+//     id: "2",
+//     name: "River Delta Estate",
+//     location: "Sacramento County, CA",
+//     acres: 1200,
+//     crops: ["Rice", "Corn", "Soybeans", "Sunflower"],
+//     status: "active",
+//     irrigation: "Flood Irrigation",
+//     employees: 15,
+//     established: "2008",
+//     soilType: "Alluvial",
+//     climate: "Warm Temperate",
+//     lastHarvest: "Jan 2026",
+//     nextPlanting: "Mar 2026",
+//     yieldPerAcre: "8 tons",
+//     image: "/river-delta-estate.jpg",
+//   },
+//   {
+//     id: "3",
+//     name: "Highland Orchards",
+//     location: "Placer County, CA",
+//     acres: 500,
+//     crops: ["Almonds", "Walnuts", "Peaches", "Plums"],
+//     status: "seasonal",
+//     irrigation: "Micro-sprinkler",
+//     employees: 8,
+//     established: "2015",
+//     soilType: "Sandy Loam",
+//     climate: "Warm Summer",
+//     lastHarvest: "Oct 2025",
+//     nextPlanting: "Dormant",
+//     yieldPerAcre: "3.5 tons",
+//     image: "/highland-orchards.jpg",
+//   },
+//   {
+//     id: "4",
+//     name: "Southside Fields",
+//     location: "San Joaquin County, CA",
+//     acres: 300,
+//     crops: ["Wheat", "Barley", "Oats"],
+//     status: "developing",
+//     irrigation: "Center Pivot",
+//     employees: 6,
+//     established: "2024",
+//     soilType: "Silty Clay",
+//     climate: "Hot Summer",
+//     lastHarvest: "New Site",
+//     nextPlanting: "May 2026",
+//     yieldPerAcre: "TBD",
+//     image: "/southside-fields.jpg",
+//   },
+// ]
 
-// Summary stats
-const summaryStats = {
-  totalBranches: branchesData.length,
-  totalAcres: branchesData.reduce((sum, b) => sum + b.acres, 0),
-  totalEmployees: branchesData.reduce((sum, b) => sum + b.employees, 0),
-  activeBranches: branchesData.filter((b) => b.status === "active").length,
-}
+export default async function BranchesPage() {
+  const session = await auth()
+  if (session === null) return (<p>no session</p>)
 
-export default function BranchesPage() {
+  const user = await getSpecificUser(session.user.id)
+  if (user === undefined) return (<p>user not seen</p>)
+
+  const branches = await getBranches({ userId: user.id })
+
+  // Summary stats
+  const summaryStats = {
+    totalBranches: branches.length,
+    totalAcres: 2,
+    totalEmployees: 2,
+    activeBranches: branches.length,
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -105,15 +117,14 @@ export default function BranchesPage() {
                   <Wheat className="size-8 text-primary" />
                   Farm Branches
                 </h1>
+
                 <p className="text-muted-foreground mt-2">
                   Manage and monitor all your agricultural operations across {summaryStats.totalBranches} locations
                 </p>
               </div>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
-                <Plus className="size-4" />
-                Add New Branch
-              </Button>
             </div>
+
+            <AddBranch user={user} />
 
             {/* Summary Stats Bar */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl bg-card border border-border">
@@ -152,8 +163,8 @@ export default function BranchesPage() {
 
             {/* Branches Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {branchesData.map((branch) => (
-                <BranchCard key={branch.id} branch={branch} />
+              {branches.map((eachBranch) => (
+                <BranchCard key={eachBranch.id} branch={eachBranch} />
               ))}
             </div>
 

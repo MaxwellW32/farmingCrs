@@ -1,5 +1,5 @@
 "use client"
-import { addBranch, getBranchs } from '@/serverFunctions/handleBranches'
+import { addBranch, getBranches } from '@/serverFunctions/handleBranches'
 import { branchType, newBranchType, userType } from '@/types'
 import { consoleAndToastError } from '@/utility/consoleErrorWithToast'
 import Link from 'next/link'
@@ -14,7 +14,7 @@ export default function ViewProfile({ seenUser }: { seenUser: userType }) {
     useEffect(() => {
         const search = async () => {
             try {
-                const branches = await getBranchs({ userId: seenUser.id })
+                const branches = await getBranches({ userId: seenUser.id })
                 branchesSet(branches)
                 console.log(`$branches`, branches);
 

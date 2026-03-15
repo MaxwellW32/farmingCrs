@@ -1,7 +1,21 @@
 //To Do
-//check port 8000 firewall
+//sprint
+//new user
+//view branches
+//new branch
+//select settings - form
+//select branch
+//see data
+//1 ai feature
+//branch acres function
+//function to find acres
 //
-//confirm user login working
-//confirm user active branch selection
-//make sign in form
-//make home page
+//maybe websockets
+//
+//
+//
+//
+//
+//
+//
+//

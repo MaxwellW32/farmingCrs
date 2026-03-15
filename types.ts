@@ -108,6 +108,7 @@ export const userSchema = z.object({
     //defaults
     id: z.string().min(1, "please add a user id"),
     companyName: z.string().min(1),
+    phoneNumber: z.string(),
 
     //regular
 
@@ -134,13 +135,15 @@ export const branchSchema = z.object({
     id: z.string().min(1, "please add a user id"),
     dateCreated: dateSchema,
     cropIds: z.object({
-        cropId: z.string().min(1),
+        id: z.string().min(1),
+        referencedCropId: z.string().min(1),
     }).array(),
     branchEvents: monitorEventSchema.array(),
 
     userId: userSchema.shape.id,
-    name: z.string().min(1),
+    name: z.string().min(1, "please enter a branch name"),
     boundingPins: boundingPinSchema.array().min(3),
+    location: z.string().min(1),
 })
 export type branchType = z.infer<typeof branchSchema> & {
     fromUser?: userType,

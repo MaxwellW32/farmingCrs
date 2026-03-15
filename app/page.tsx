@@ -70,7 +70,7 @@ export default function Home() {
               <span className="text-amber-400">CRS</span>
             </h1>
             <p className="mb-8 max-w-md text-lg leading-relaxed text-white/90">
-              Drone-powered crop reconnaissance that turns every acre into actionable insight. Monitor, analyse and optimise — from seedling to harvest.
+              AI-powered crop intelligence that helps farmers monitor, analyse and optimise every stage of growth — from seedling to harvest.
             </p>
             <div className="flex flex-wrap items-center gap-4">
               <Button size="lg" className="bg-primary hover:bg-primary/90" asChild>

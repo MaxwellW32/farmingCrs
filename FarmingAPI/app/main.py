@@ -1,20 +1,18 @@
 from fastapi import FastAPI, HTTPException
-from sqlalchemy import text
 import httpx
+import math
+import uuid
+import models
+import json
+import openai # NEW: Ensure you pip install openai
 from database import SessionLocal, Crops
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# --- Middleware ---
-origins = [
-    "http://localhost",
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-    "https://squaremaxtech.com",
-]
+# Replace with your actual key or use an environment variable (recommended)
+# os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI(api_key="")
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,106 +22,130 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Logic & Helper Functions ---
+# --- Helper: AI Agronomist ---
 
-def generate_farming_alerts(stats: dict, crops: list):
+async def get_ai_agronomist_advice(stats: dict, alerts: list, crop_name: str):
+    """Generates deep biological insights based on greenhouse telemetry."""
+    # Build a context-rich prompt for the AI
+    alert_messages = ". ".join([a['message'] for a in alerts])
+    
+    prompt = f"""
+    You are a professional Indoor Farming Agronomist. 
+    Current Telemetry: Temp {stats['temperature']}°C, Humidity {stats['humidity']}%, VPD {stats['vpd']} kPa.
+    Active Alerts: {alert_messages}
+    Target Crop: {crop_name}
+    
+    In 2 short sentences:
+    1. Explain the biological impact of these conditions on this crop.
+    2. Recommend one specific mechanical adjustment (fan, heater, mister, or LED) to stabilize the system.
+    Be technical but concise.
+    """
+
+    try:
+        # Using a newer model for high-quality horticultural advice
+        response = client.chat.completions.create(
+            model="gpt-4o-mini", 
+            messages=[
+                {"role": "system", "content": "You are a CEA (Controlled Environment Agriculture) expert assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=150
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"AI Error: {e}")
+        return "AI Advisor offline. Please consult standard operating procedures for current alerts."
+
+# --- Logic Helpers ---
+
+def calculate_vpd(temp: float, humidity: float) -> float:
+    svp = 0.61078 * math.exp((17.27 * temp) / (temp + 237.3))
+    avp = svp * (humidity / 100)
+    return round(svp - avp, 2)
+
+def generate_indoor_alerts(stats: dict, crops: list):
     alerts = []
+    vpd = calculate_vpd(stats['temperature'], stats['humidity'])
     
     for crop in crops:
-        # --- 1. Temperature Stress & Priority Scoring ---
-        # Calculate how far current temp is from the "Sweet Spot"
-        temp_diff = 0
-        if stats['temperature'] > crop.optHigh:
-            temp_diff = stats['temperature'] - crop.optHigh
-        elif stats['temperature'] < crop.optLow:
-            temp_diff = crop.optLow - stats['temperature']
-
-        # Determine Priority based on deviation
-        if temp_diff > 10:
-            priority = 10  # Critical
-            level = "CRITICAL"
-        elif temp_diff > 5:
-            priority = 7   # High
-            level = "WARNING"
-        else:
-            priority = 3   # Low
-            level = "INFO"
-
-        if temp_diff > 0:
+        if vpd < 0.5:
             alerts.append({
-                "crop": crop.name,
-                "type": "THERMAL_STRESS",
-                "level": level,
-                "priority": priority,
-                "message": f"{crop.name} is experiencing thermal stress. Temp is {temp_diff}°C away from optimal."
+                "crop": crop.name, "type": "STAGNATION_RISK", "level": "WARNING", "priority": 7,
+                "message": f"Low VPD ({vpd} kPa). Air is too stagnant. Risk of mold/mildew."
+            })
+        elif vpd > 1.5:
+            alerts.append({
+                "crop": crop.name, "type": "TRANSPIRATION_STRESS", "level": "CRITICAL", "priority": 9,
+                "message": f"High VPD ({vpd} kPa). Air is too dry. Stomata closing."
             })
 
-    # --- 2. Operational Alerts (General) ---
-    if stats['wind_speed'] > 15:
+        if stats['temperature'] > crop.optHigh:
+            diff = round(stats['temperature'] - crop.optHigh, 1)
+            alerts.append({
+                "crop": crop.name, "type": "HVAC_FAILURE", "level": "WARNING", "priority": 6,
+                "message": f"Temp is {diff}°C above set-point. Cooling efficiency low."
+            })
+
+    if stats['precipitation'] > 0:
         alerts.append({
-            "crop": "All",
-            "type": "OPERATIONAL_DANGER",
-            "level": "CRITICAL",
-            "priority": 9,
-            "message": "High wind speeds: Spraying pesticide/fertilizer is dangerous due to drift."
+            "crop": "All Zones", "type": "LIGHT_COMPENSATION", "level": "INFO", "priority": 4,
+            "message": "Low natural light detected. Increase LED Supplemental Lighting."
         })
 
-    # --- 3. Disease Risk (Dynamic) ---
-    if stats['humidity'] > 85:
-        alerts.append({
-            "crop": "Fungal-Sensitive",
-            "type": "DISEASE_RISK",
-            "level": "HIGH",
-            "priority": 8,
-            "message": "Extreme humidity detected. High risk for blight and powdery mildew."
-        })
-
-    # Sort alerts so the most important (Priority 10) are at the top
     return sorted(alerts, key=lambda x: x['priority'], reverse=True)
 
+def simulate_failure(scenario: str):
+    scenarios = {
+        "hvac_fail": {"temperature": 38.5, "humidity": 40.0, "precipitation": 0.0},
+        "humidity_spike": {"temperature": 22.0, "humidity": 95.0, "precipitation": 0.0},
+        "cloudy_day": {"temperature": 18.0, "humidity": 60.0, "precipitation": 2.5},
+        "ideal": {"temperature": 24.0, "humidity": 55.0, "precipitation": 0.0}
+    }
+    return scenarios.get(scenario, scenarios["ideal"])
 
+# --- Updated Dashboard Endpoint ---
 
-def analyze_crop_suitability(db, current_temp, current_humidity):
-    """Uses DB data to check if conditions are right for specific crops."""
-    report = {}
-    crops = db.query(Crops).all()
+@app.get("/farmer-dashboard")
+async def get_dashboard(lat: float, lon: float, crop_id: str = None, sim: str = None):
+    if sim:
+        stats = simulate_failure(sim)
+        location = {"lat": lat, "lon": lon, "mode": "SIMULATION"}
+    else:
+        weather_data = await get_weather(lat, lon) 
+        stats = weather_data["stats"]
+        location = weather_data["location"]
     
-    for crop in crops:
-        # Check temperature survival range
-        temp_viable = crop.minTemp <= current_temp <= crop.maxTemp
-        # Check optimal 'Sweet Spot'
-        temp_optimal = crop.optLow <= current_temp <= crop.optHigh
-        
-        # Humidity Logic: Using a 15% buffer around your 'idealHumidity' column
-        hum_min = crop.idealHumidity - 15
-        hum_max = crop.idealHumidity + 15
-        hum_optimal = hum_min <= current_humidity <= hum_max
-
-        if not temp_viable:
-            status = "CRITICAL: Temperature outside survival range."
-        elif temp_optimal and hum_optimal:
-            status = "OPTIMAL: Perfect temperature and humidity."
-        elif temp_optimal and not hum_optimal:
-            status = "STRESSED: Temperature is good, but humidity is off-target."
+    vpd = calculate_vpd(stats['temperature'], stats['humidity'])
+    stats_with_vpd = {**stats, "vpd": vpd}
+    
+    with SessionLocal() as db:
+        if crop_id:
+            crops = db.query(Crops).filter(Crops.id == crop_id).all()
         else:
-            status = "VIABLE: Conditions are acceptable but not ideal."
+            crops = db.query(Crops).all()
             
-        report[crop.name] = status
-        
-    return report
+        active_alerts = generate_indoor_alerts(stats, crops)
+    
+    # AI Logic: Only trigger if we have a specific crop selected and alerts are present
+    # This keeps your API costs low during development.
+    ai_analysis = "All systems nominal. No bio-feedback required."
+    if active_alerts:
+        primary_crop = crops[0].name if crops else "General Crops"
+        ai_analysis = await get_ai_agronomist_advice(stats_with_vpd, active_alerts, primary_crop)
 
-def check_disease_risk(temp, humidity):
-    risk_level = "Low"
-    potential_disease = "None"
-    if humidity > 90 and 15 < temp < 25:
-        risk_level = "High"
-        potential_disease = "Late Blight / Fungal Outbreak"
-    elif humidity > 80 and temp > 28:
-        risk_level = "Medium"
-        potential_disease = "Root Rot / Bacterial Wilt"
-    return {"risk": risk_level, "target": potential_disease}
+    penalty = sum(a['priority'] for a in active_alerts)
+    health_score = max(0, 100 - (penalty * 4))
 
-# --- Endpoints ---
+    return {
+        "location": location,
+        "farm_health_score": f"{health_score}%",
+        "current_conditions": {**stats_with_vpd, "vpd_unit": "kPa"},
+        "alerts": active_alerts,
+        "ai_analysis": ai_analysis, # This maps to the frontend section we built
+        "system_status": "CRITICAL_FAILURE" if health_score < 60 else "OPTIMAL"
+    }
+
+# (Keep your other endpoints: get_weather, get_all_crops, etc.)
 
 @app.get("/weather", tags=["external"])
 async def get_weather(lat: float, lon: float):
@@ -236,39 +258,52 @@ async def get_recommendations(lat: float, lon: float):
             
         return result
     
-@app.get("/can-i-spray")
-async def check_spraying_safety(lat: float, lon: float):
-    weather = await get_weather(lat, lon)
-    alerts = generate_farming_alerts(weather["stats"])
-    
-    # Filter only for operational alerts
-    spray_alerts = [a for a in alerts if a["type"] == "OPERATIONAL_DANGER"]
-    
-    if spray_alerts:
-        return {"can_spray": False, "reason": spray_alerts[0]["message"]}
-    return {"can_spray": True, "message": "Conditions are ideal for spraying."}
 
-@app.get("/farmer-dashboard", tags=["Logic"])
-async def get_dashboard(lat: float, lon: float):
-    weather_data = await get_weather(lat, lon)
-    stats = weather_data["stats"]
-    
+@app.get("/crops", tags=["Data"])
+def get_all_crops():
+    """Returns a list of all crops for the UI toggle."""
     with SessionLocal() as db:
-        # Fetch all crops to check their sensitivities
-        all_crops = db.query(Crops).all()
-        
-        # Generate the dynamic alerts
-        active_alerts = generate_farming_alerts(stats, all_crops)
-    
-    # Calculate a "Farm Health Score" (100 - total priority of top 3 alerts)
-    # This is a great metric for a portfolio UI!
-    total_stress = sum(a['priority'] for a in active_alerts[:3])
-    health_score = max(0, 100 - (total_stress * 3))
+        crops = db.query(Crops).all()
+        # We only return the ID and Name for the toggle buttons
+        return [{"id": str(c.id), "name": c.name} for c in crops]
 
-    return {
-        "location": weather_data["location"],
-        "farm_health_score": f"{health_score}%",
-        "current_conditions": stats,
-        "alerts": active_alerts,
-        "alert_count": len(active_alerts)
-    }
+async def generate_crop_specs(crop_name: str):
+    """Uses AI to research crop requirements and return them as JSON."""
+    prompt = f"""
+    Act as a horticultural database. Provide the environmental requirements for '{crop_name}'.
+    Return ONLY a JSON object with these keys:
+    "minTemp": float (absolute survival min),
+    "maxTemp": float (absolute survival max),
+    "optLow": float (start of healthy growth),
+    "optHigh": float (end of healthy growth),
+    "idealHumidity": float (target percentage)
+    
+    Ensure the values are scientifically accurate for indoor farming.
+    """
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={ "type": "json_object" } # Forces JSON output
+        )
+        return json.loads(response.choices[0].message.content)
+    except Exception as e:
+        print(f"Generation Error: {e}")
+        return None
+
+@app.post("/add-crop-ai/{crop_name}")
+async def add_crop_via_ai(crop_name: str):
+    specs = await generate_crop_specs(crop_name)
+    if not specs:
+        raise HTTPException(status_code=500, detail="AI error")
+
+    with SessionLocal() as db:
+        new_crop = Crops(
+            id=str(uuid.uuid4()), # Manually generate the UUID here
+            name=crop_name.capitalize(),
+            **specs # Unpacks minTemp, maxTemp, etc. from the AI JSON
+        )
+        db.add(new_crop)
+        db.commit()
+    return {"status": "success"}

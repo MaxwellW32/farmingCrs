@@ -1,10 +1,16 @@
 "use client"
 import { branchType } from '@/types'
 import { consoleAndToastError } from '@/utility/consoleErrorWithToast'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
     const [rec, recSet] = useState<unknown | undefined>(undefined)
+
+    //best times of year yield / plant different things
+    //live alerts
+    //show recommended crops along with viability
+    //add crops to the branch
+    //ai looks at crop fullness time, gives advice on whether can stay go
 
     useEffect(() => {
         const search = async () => {

@@ -9,6 +9,7 @@ import { branchType, cropType } from "@/types"
 import React, { useEffect, useState } from "react"
 import { consoleAndToastError } from "@/utility/consoleErrorWithToast"
 import { getCrops } from "@/serverFunctions/handleCrops"
+import { coordsToString } from "@/utility/contextHelpers"
 
 // interface Branch {
 //   id: string
@@ -82,7 +83,7 @@ export function BranchesList({ branches }: { branches: branchType[] }) {
 
                 <div className="flex items-center gap-2 text-muted-foreground mb-3">
                   <MapPin className="size-4" />
-                  <span className="text-sm">{branch.location}</span>
+                  <span className="text-sm">{coordsToString(branch.boundingPins[0].coordinates)}</span>
                 </div>
 
                 <div className="flex flex-wrap gap-2">

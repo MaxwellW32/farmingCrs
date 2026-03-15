@@ -1,21 +1,147 @@
-import { auth } from "@/auth/auth";
-import ViewProfile from "@/components/users/ViewProfile";
-import { getSpecificUser } from "@/serverFunctions/handleUsers";
+import { ProfileHeader } from "@/components/farmer-profile/profile-header"
+import { StatsCards } from "@/components/farmer-profile/stats-cards"
+import { BranchesList } from "@/components/farmer-profile/branches-list"
+import { AboutSection } from "@/components/farmer-profile/about-section"
+import { SidebarNav } from "@/components/farmer-profile/sidebar-nav"
+import { Tractor } from "lucide-react"
 
-export default async function Page() {
-  //get user
-  //get branches for user
-  //show list
+// Sample farmer data
+const farmerData = {
+  name: "James Whitfield",
+  role: "Organic Crop Farmer & Agricultural Consultant",
+  location: "Sacramento Valley, California",
+  email: "james@whitfieldfarms.com",
+  phone: "+1 (530) 555-0142",
+  memberSince: "March 2019",
+  avatar: "/placeholder-avatar.jpg",
+  verified: true,
+}
 
-  const session = await auth()
-  if (session === null) return (<p>not signed in</p>)
+const statsData = {
+  totalBranches: 4,
+  totalAcres: 2850,
+  employees: 47,
+  yearlyYield: "12,500 tons",
+}
 
-  const seenUser = await getSpecificUser(session.user.id)
-  if (seenUser === undefined) return (<p>not seeing user</p>)
+const branchesData = [
+  {
+    id: "1",
+    name: "North Valley Farm",
+    location: "Yolo County, CA",
+    acres: 850,
+    crops: ["Organic Tomatoes", "Bell Peppers", "Squash"],
+    status: "active" as const,
+    irrigation: "Drip System",
+  },
+  {
+    id: "2",
+    name: "River Delta Estate",
+    location: "Sacramento County, CA",
+    acres: 1200,
+    crops: ["Rice", "Corn", "Soybeans"],
+    status: "active" as const,
+    irrigation: "Flood Irrigation",
+  },
+  {
+    id: "3",
+    name: "Highland Orchards",
+    location: "Placer County, CA",
+    acres: 500,
+    crops: ["Almonds", "Walnuts", "Peaches"],
+    status: "seasonal" as const,
+    irrigation: "Micro-sprinkler",
+  },
+  {
+    id: "4",
+    name: "Southside Fields",
+    location: "San Joaquin County, CA",
+    acres: 300,
+    crops: ["Wheat", "Barley"],
+    status: "developing" as const,
+    irrigation: "Center Pivot",
+  },
+]
 
+const aboutData = {
+  bio: "With over 25 years of experience in sustainable agriculture, I have dedicated my life to cultivating quality crops while preserving the land for future generations. My journey began on my family's small farm in the Central Valley, and has since grown into a network of four thriving agricultural operations across Northern California.",
+  specialties: [
+    "Organic Farming",
+    "Sustainable Agriculture",
+    "Crop Rotation",
+    "Water Conservation",
+    "Soil Health Management",
+  ],
+  certifications: [
+    "USDA Organic Certified",
+    "California Certified Organic Farmers",
+    "Regenerative Organic Certified",
+    "Global G.A.P.",
+  ],
+}
+
+export default function FarmerProfilePage() {
   return (
-    <div>
-      <ViewProfile seenUser={seenUser} />
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Tractor className="size-6 text-primary" />
+            <span className="font-bold text-lg text-foreground">FarmConnect</span>
+          </div>
+          <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
+            <a href="#" className="hover:text-foreground transition-colors">Dashboard</a>
+            <a href="#" className="hover:text-foreground transition-colors">Marketplace</a>
+            <a href="#" className="text-primary font-medium">Profile</a>
+            <a href="#" className="hover:text-foreground transition-colors">Support</a>
+          </nav>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-8">
+          {/* Sidebar */}
+          <aside className="hidden lg:block">
+            <div className="sticky top-24">
+              <SidebarNav />
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <main className="space-y-8">
+            {/* Profile Header */}
+            <section className="pb-8 border-b border-border">
+              <ProfileHeader farmer={farmerData} />
+            </section>
+
+            {/* Stats */}
+            <section>
+              <StatsCards stats={statsData} />
+            </section>
+
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-8">
+              {/* Branches */}
+              <section>
+                <BranchesList branches={branchesData} />
+              </section>
+
+              {/* About */}
+              <section>
+                <AboutSection about={aboutData} />
+              </section>
+            </div>
+          </main>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t border-border mt-16 py-8">
+        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+          <p>FarmConnect - Connecting Farmers, Growing Communities</p>
+        </div>
+      </footer>
     </div>
-  );
+  )
 }

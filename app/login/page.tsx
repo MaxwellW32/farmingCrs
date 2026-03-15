@@ -19,7 +19,7 @@ export default function LoginPage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
               <Leaf className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">AgriSense</span>
+            <span className="text-xl font-bold text-foreground"></span>
           </Link>
         </div>
       </header>
@@ -30,7 +30,7 @@ export default function LoginPage() {
         <Card className="w-full max-w-md border-border/40 bg-card/80 backdrop-blur">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-foreground">Welcome Back</CardTitle>
-            <CardDescription>Sign in to your AgriSense account</CardDescription>
+            <CardDescription>Sign in to your Farming CRS account</CardDescription>
           </CardHeader>
           <CardContent>
             <form className="space-y-4">

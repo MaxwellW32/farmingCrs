@@ -16,7 +16,7 @@ export default function SignupPage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
               <Leaf className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">AgriSense</span>
+            <span className="text-xl font-bold text-foreground">Farming CRS</span>
           </Link>
         </div>
       </header>
@@ -46,7 +46,7 @@ export default function SignupPage() {
           <Card className="border-border/40 bg-card/80 backdrop-blur">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-bold text-foreground">Create Your Account</CardTitle>
-              <CardDescription>Get started with AgriSense in minutes</CardDescription>
+              <CardDescription>Get started with Farming CRS in minutes</CardDescription>
             </CardHeader>
             <CardContent>
               <form className="space-y-4">

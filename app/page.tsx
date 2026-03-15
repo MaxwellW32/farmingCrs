@@ -235,10 +235,10 @@ export default function Home() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <Leaf className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="font-semibold text-foreground">AgriSense</span>
+              <span className="font-semibold text-foreground">Farming CRS</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              2026 AgriSense. All rights reserved.
+              2026 Farming CRS. All rights reserved.
             </p>
           </div>
         </div>

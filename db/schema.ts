@@ -27,7 +27,7 @@ export const userRelations = relations(users, ({ many }) => ({
 export const branches = pgTable("branches", {
     id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     dateCreated: timestamp("dateCreated", { mode: "date" }).notNull().defaultNow(),
-    crops: json("crops").$type<branchType["crops"]>().default([]).notNull(),
+    cropIds: json("cropIds").$type<branchType["cropIds"]>().default([]).notNull(),
 
     userId: text("userId").notNull().references(() => users.id),
     name: text("name").notNull(),
@@ -43,6 +43,27 @@ export const branchRelations = relations(branches, ({ one, many }) => ({
         fields: [branches.userId],
         references: [users.id]
     }),
+}));
+
+
+
+
+export const crops = pgTable("crops", {
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+
+    name: text("name").notNull(),
+    minTemp: integer("minTemp").notNull(),
+    maxTemp: integer("maxTemp").notNull(),
+    optLow: integer("optLow").notNull(),
+    optHigh: integer("optHigh").notNull(),
+    idealHumidity: integer("idealHumidity").notNull(),
+},
+    (table) => {
+        return {
+            cropNameIndex: index("cropNameIndex").on(table.name),
+        };
+    })
+export const cropRelations = relations(crops, ({ }) => ({
 }));
 
 

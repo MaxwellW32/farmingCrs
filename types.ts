@@ -22,15 +22,6 @@ export const coordinatesSchema = z.object({
 
 
 
-//types for db
-export const cropSchema = z.object({
-    id: z.string().min(1),
-    name: z.string().min(1),
-    recSoilTemp: z.string().min(1),//in degrees
-    recElevation: z.number(),//in meters
-})
-export type cropType = z.infer<typeof cropSchema>
-
 export const boundingPinSchema = z.object({
     coordinates: coordinatesSchema,
 })
@@ -128,7 +119,9 @@ export type updateUserType = z.infer<typeof updateUserSchema>
 export const branchSchema = z.object({
     id: z.string().min(1, "please add a user id"),
     dateCreated: dateSchema,
-    crops: cropSchema.array(),
+    cropIds: z.object({
+        cropId: z.string().min(1),
+    }).array(),
     branchEvents: monitorEventSchema.array(),
 
     userId: userSchema.shape.id,
@@ -143,3 +136,24 @@ export type newBranchType = z.infer<typeof newBranchSchema>
 
 export const updateBranchSchema = branchSchema.omit({ id: true, dateCreated: true, userId: true })
 export type updateBranchType = z.infer<typeof updateBranchSchema>
+
+
+
+export const cropSchema = z.object({
+    id: z.string().min(1),
+
+    name: z.string().min(1),
+    minTemp: z.number(),
+    maxTemp: z.number(),
+    optLow: z.number(),
+    optHigh: z.number(),
+    idealHumidity: z.number(),
+})
+export type cropType = z.infer<typeof cropSchema> & {
+}
+
+export const newCropSchema = cropSchema.omit({ id: true })
+export type newCropType = z.infer<typeof newCropSchema>
+
+export const updateCropSchema = cropSchema.omit({ id: true })
+export type updateCropType = z.infer<typeof updateCropSchema>

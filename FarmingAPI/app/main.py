@@ -2,8 +2,27 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 import httpx
 from database import SessionLocal, Users, Crops
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Define who is allowed to talk to your API
+origins = [
+    "http://localhost",
+    "http://localhost:3000", # Common for React
+    "http://localhost:5173", # Common for Vite/Vue/React
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    # Add your production domain here later
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # For a hackathon, "*" allows EVERYTHING. 
+    allow_credentials=True,
+    allow_methods=["*"], # Allows GET, POST, OPTIONS, etc.
+    allow_headers=["*"], # Allows all headers
+)
 
 def generate_farming_alerts(stats: dict):
     alerts = []

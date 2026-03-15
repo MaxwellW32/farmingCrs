@@ -1,7 +1,30 @@
 "use client"
+import { consoleAndToastError } from "@/utility/consoleErrorWithToast";
 import Image from "next/image";
+import { useEffect } from "react";
 
 export default function Home() {
+  useEffect(() => {
+    const search = async () => {
+      try {
+        // Get host
+        const protocol = window.location.protocol; // "http:" or "https:"
+        const host = window.location.hostname; // e.g., "localhost" or "mydomain.com"
+
+        //get api test
+        const rcCropsRes = await fetch(`${protocol}//${host}:8000/crs-analysis?lat=18.00099&lon=-76.82816`);
+        const recCrops = await rcCropsRes.json()
+        console.log(`$recCrops`, recCrops);
+
+      } catch (error) {
+        consoleAndToastError(error)
+      }
+    }
+
+    search()
+
+  }, [])
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       {/* <button style={{ color: "black" }}

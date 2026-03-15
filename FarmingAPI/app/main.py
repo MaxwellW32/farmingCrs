@@ -12,7 +12,7 @@ app = FastAPI()
 
 # Replace with your actual key or use an environment variable (recommended)
 # os.getenv("OPENAI_API_KEY")
-client = openai.OpenAI(api_key="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")
+client = openai.OpenAI(api_key="")
 
 app.add_middleware(
     CORSMiddleware,

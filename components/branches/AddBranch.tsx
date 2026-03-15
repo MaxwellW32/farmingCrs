@@ -27,8 +27,6 @@ export default function AddBranch({ user }: { user: userType }) {
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY!
     })
 
-    console.log(`$isLoaded`, isLoaded);
-
     function createInitialSquare(lat: number, lng: number) {
         const offset = 0.001 // ~100m
 
@@ -62,11 +60,6 @@ export default function AddBranch({ user }: { user: userType }) {
 
     async function handleSubmit() {
         if (pins.length === 0) return
-
-        const centerLat =
-            pins.reduce((sum, p) => sum + p.lat, 0) / pins.length
-        const centerLng =
-            pins.reduce((sum, p) => sum + p.lng, 0) / pins.length
 
         const newBranch: newBranchType = {
             boundingPins: pins.map((p) => ({

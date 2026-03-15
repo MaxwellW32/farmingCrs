@@ -1,0 +1,19 @@
+.navButtonRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.sideMenu {
+    width: min(350px, 100%);
+    align-content: flex-start;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background-color: var(--bg1);
+    z-index: 10;
+    overflow: auto;
+}

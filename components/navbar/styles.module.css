@@ -3,6 +3,7 @@
     text-transform: capitalize;
     background-color: var(--bg2);
     color: var(--fc1);
+    z-index: 9999;
 }
 
 .desktopNav {
@@ -40,8 +41,7 @@
         left: 0;
         bottom: 0;
         right: 0;
-        /* top: 100%;
-        left: 0; */
+        background-color: var(--bg2);
     }
 
     .menu {

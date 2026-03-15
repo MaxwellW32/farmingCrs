@@ -45,7 +45,7 @@ export function DashboardHeader() {
         </Link>
       </div>
 
-     
+
 
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" className="relative">
@@ -72,7 +72,7 @@ export function DashboardHeader() {
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/login" className="flex items-center">
+              <Link href="/api/auth/signout" className="flex items-center">
                 <LogOut className="mr-2 h-4 w-4" />
                 Log out
               </Link>

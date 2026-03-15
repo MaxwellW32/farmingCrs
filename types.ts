@@ -18,6 +18,19 @@ export const coordinatesSchema = z.object({
 
 
 //other types
+//handle search
+export type tableFilterTypes<T> = {
+    [key in keyof T]?: T[key]
+}
+
+export type searchObjType<T> = {
+    searchItems: T[],
+    loading?: true,
+    limit?: number, //how many
+    offset?: number, //increaser
+    incrementOffsetBy?: number, //how much to increase by
+    refreshAll?: boolean
+}
 
 
 
@@ -105,6 +118,7 @@ export const userSchema = z.object({
     image: z.string().min(1).nullable(),
 })
 export type userType = z.infer<typeof userSchema> & {
+    branches?: branchType[]
 }
 
 export const newUserSchema = userSchema.omit({ id: true })
@@ -129,6 +143,7 @@ export const branchSchema = z.object({
     boundingPins: boundingPinSchema.array().min(3),
 })
 export type branchType = z.infer<typeof branchSchema> & {
+    fromUser?: userType,
 }
 
 export const newBranchSchema = branchSchema.omit({ id: true, dateCreated: true })

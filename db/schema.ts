@@ -28,6 +28,7 @@ export const branches = pgTable("branches", {
     id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     dateCreated: timestamp("dateCreated", { mode: "date" }).notNull().defaultNow(),
     cropIds: json("cropIds").$type<branchType["cropIds"]>().default([]).notNull(),
+    branchEvents: json("branchEvents").$type<branchType["branchEvents"]>().default([]).notNull(),
 
     userId: text("userId").notNull().references(() => users.id),
     name: text("name").notNull(),

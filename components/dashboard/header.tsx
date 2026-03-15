@@ -41,7 +41,7 @@ export function DashboardHeader() {
               <path d="M7 14v.01" />
             </svg>
           </div>
-          <span className="text-lg font-bold text-foreground">AgriSense</span>
+          <span className="text-lg font-bold text-foreground"></span>
         </Link>
       </div>
 

@@ -1,3 +1,69 @@
+.navCont {
+    font-size: var(--fontSizeS);
+    text-transform: capitalize;
+    background-color: var(--bg2);
+    color: var(--fc1);
+}
+
+.desktopNav {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+}
+
+.mobileNav {
+    display: none;
+}
+
+.menu {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+
+/* mobile */
+@media only screen and (max-width: 600px) {
+    .desktopNav {
+        display: none;
+    }
+
+    .mobileNav {
+        display: grid;
+        position: relative;
+        background-color: var(--bg2);
+    }
+
+    .popupMenu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        /* top: 100%;
+        left: 0; */
+    }
+
+    .menu {
+        display: grid;
+        align-content: flex-start;
+        padding: 1rem;
+        background-color: var(--bg2);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 .moreItemsMenu {
     padding: var(--spacingS);
     display: grid;

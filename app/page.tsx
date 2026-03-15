@@ -1,7 +1,21 @@
 "use client"
-import { consoleAndToastError } from "@/utility/consoleErrorWithToast";
-import Image from "next/image";
-import { useEffect } from "react";
+
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  Leaf,
+  CloudSun,
+  BarChart3,
+  Brain,
+  Droplets,
+  Smartphone,
+  ArrowRight,
+  Check,
+  Sprout,
+} from "lucide-react"
+import { consoleAndToastError } from "@/utility/consoleErrorWithToast"
+import { useEffect } from "react"
 
 export default function Home() {
   useEffect(() => {
@@ -27,308 +41,278 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      {/* <button style={{ color: "black" }}
-        onClick={async () => {
-          const fixedIds = [
-            {
-              "id": "1",
-              "name": "Tomato",
-              "minTemp": 10,
-              "maxTemp": 35,
-              "optLow": 21,
-              "optHigh": 24,
-              "idealHumidity": 65
-            },
-            {
-              "id": "2",
-              "name": "Maize",
-              "minTemp": 10,
-              "maxTemp": 35,
-              "optLow": 25,
-              "optHigh": 30,
-              "idealHumidity": 60
-            },
-            {
-              "id": "3",
-              "name": "Lettuce",
-              "minTemp": 7,
-              "maxTemp": 24,
-              "optLow": 15,
-              "optHigh": 18,
-              "idealHumidity": 75
-            },
-            {
-              "id": "4",
-              "name": "Bell Pepper",
-              "minTemp": 15,
-              "maxTemp": 32,
-              "optLow": 20,
-              "optHigh": 25,
-              "idealHumidity": 70
-            },
-            {
-              "id": "5",
-              "name": "Carrot",
-              "minTemp": 5,
-              "maxTemp": 28,
-              "optLow": 16,
-              "optHigh": 21,
-              "idealHumidity": 70
-            },
-            {
-              "id": "6",
-              "name": "Potato",
-              "minTemp": 7,
-              "maxTemp": 30,
-              "optLow": 18,
-              "optHigh": 22,
-              "idealHumidity": 75
-            },
-            {
-              "id": "7",
-              "name": "Spinach",
-              "minTemp": 2,
-              "maxTemp": 24,
-              "optLow": 15,
-              "optHigh": 18,
-              "idealHumidity": 80
-            },
-            {
-              "id": "8",
-              "name": "Eggplant",
-              "minTemp": 18,
-              "maxTemp": 35,
-              "optLow": 24,
-              "optHigh": 29,
-              "idealHumidity": 65
-            },
-            {
-              "id": "9",
-              "name": "Cucumber",
-              "minTemp": 15,
-              "maxTemp": 35,
-              "optLow": 22,
-              "optHigh": 28,
-              "idealHumidity": 85
-            },
-            {
-              "id": "10",
-              "name": "Broccoli",
-              "minTemp": 4,
-              "maxTemp": 26,
-              "optLow": 16,
-              "optHigh": 20,
-              "idealHumidity": 70
-            },
-            {
-              "id": "11",
-              "name": "Strawberry",
-              "minTemp": 10,
-              "maxTemp": 28,
-              "optLow": 18,
-              "optHigh": 24,
-              "idealHumidity": 65
-            },
-            {
-              "id": "12",
-              "name": "Okra",
-              "minTemp": 20,
-              "maxTemp": 40,
-              "optLow": 27,
-              "optHigh": 32,
-              "idealHumidity": 60
-            },
-            {
-              "id": "13",
-              "name": "Cabbage",
-              "minTemp": 4,
-              "maxTemp": 25,
-              "optLow": 15,
-              "optHigh": 20,
-              "idealHumidity": 75
-            },
-            {
-              "id": "14",
-              "name": "Soybean",
-              "minTemp": 10,
-              "maxTemp": 38,
-              "optLow": 25,
-              "optHigh": 32,
-              "idealHumidity": 60
-            },
-            {
-              "id": "15",
-              "name": "Peas",
-              "minTemp": 5,
-              "maxTemp": 25,
-              "optLow": 13,
-              "optHigh": 18,
-              "idealHumidity": 75
-            },
-            {
-              "id": "16",
-              "name": "Sweet Potato",
-              "minTemp": 15,
-              "maxTemp": 37,
-              "optLow": 24,
-              "optHigh": 30,
-              "idealHumidity": 70
-            },
-            {
-              "id": "17",
-              "name": "Yam",
-              "minTemp": 18,
-              "maxTemp": 35,
-              "optLow": 25,
-              "optHigh": 30,
-              "idealHumidity": 80
-            },
-            {
-              "id": "18",
-              "name": "Cassava",
-              "minTemp": 16,
-              "maxTemp": 40,
-              "optLow": 25,
-              "optHigh": 29,
-              "idealHumidity": 65
-            },
-            {
-              "id": "19",
-              "name": "Watermelon",
-              "minTemp": 18,
-              "maxTemp": 38,
-              "optLow": 25,
-              "optHigh": 33,
-              "idealHumidity": 60
-            },
-            {
-              "id": "20",
-              "name": "Radish",
-              "minTemp": 4,
-              "maxTemp": 27,
-              "optLow": 15,
-              "optHigh": 21,
-              "idealHumidity": 70
-            },
-            {
-              "id": "21",
-              "name": "Cauliflower",
-              "minTemp": 7,
-              "maxTemp": 25,
-              "optLow": 15,
-              "optHigh": 20,
-              "idealHumidity": 75
-            },
-            {
-              "id": "22",
-              "name": "Pumpkin",
-              "minTemp": 15,
-              "maxTemp": 32,
-              "optLow": 23,
-              "optHigh": 29,
-              "idealHumidity": 70
-            },
-            {
-              "id": "23",
-              "name": "Ginger",
-              "minTemp": 18,
-              "maxTemp": 35,
-              "optLow": 25,
-              "optHigh": 28,
-              "idealHumidity": 85
-            },
-            {
-              "id": "24",
-              "name": "Garlic",
-              "minTemp": 5,
-              "maxTemp": 30,
-              "optLow": 13,
-              "optHigh": 24,
-              "idealHumidity": 60
-            },
-            {
-              "id": "25",
-              "name": "Kale",
-              "minTemp": -5,
-              "maxTemp": 25,
-              "optLow": 15,
-              "optHigh": 20,
-              "idealHumidity": 75
-            }
-          ].map(each => {
-            each = { ...each }
-
-            each.id = v4()
-
-            return each
-          })
-
-          await Promise.all(fixedIds.map(async eachBranch => {
-            await addCrop({
-              ...eachBranch
-            })
-          }))
-        }}
-      >click</button> */}
-
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <section className="relative min-h-screen overflow-hidden">
+        {/* Background crop image - full coverage */}
+        <div className="absolute inset-0">
+          <img
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/crop-aH2ctBUJtsi7iFOHEe3kuUmdzUyWh1.jpeg"
+            alt="Lush farm crops at sunset"
+            className="h-full w-full object-cover"
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+        {/* Subtle gradient overlay - only on left for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
+        {/* Bottom gradient for smooth transition to next section */}
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background via-background/80 to-transparent" />
+
+        {/* Farmer on the left - positioned within the scene */}
+        <div className="pointer-events-none absolute bottom-0 left-4 z-10 hidden lg:block lg:left-8">
+          <img
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ffarmer-zqtj5dOs0zYKQxn7Ipb04fYxu0vjrk.png"
+            alt="Farmer overlooking crops"
+            className="h-[600px] w-auto object-contain"
+          />
+        </div>
+
+        {/* Drone in the air with spray/scan beam */}
+        <div className="pointer-events-none absolute right-[15%] top-[15%] z-10 hidden md:block">
+          <img
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/drone-POs3icGEIpvW4kLPDS3UWCui6X38cY.png"
+            alt="Agricultural drone scanning crops"
+            className="h-32 w-auto object-contain drop-shadow-2xl lg:h-40"
+          />
+          {/* Spray/scan beam effect */}
+          <div
+            className="absolute left-1/2 top-full -translate-x-1/2"
+            style={{
+              width: '200px',
+              height: '300px',
+              background: 'linear-gradient(to bottom, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+              clipPath: 'polygon(40% 0%, 60% 0%, 100% 100%, 0% 100%)',
+            }}
+          />
+        </div>
+
+        {/* Content - left aligned */}
+        <div className="container relative z-20 mx-auto flex min-h-screen items-center px-4 py-32 lg:px-8">
+          <div className="max-w-lg lg:ml-[280px]">
+            <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-white/80">
+              Precision Agriculture Platform
+            </p>
+            <h1 className="mb-6 text-5xl font-bold tracking-tight text-white md:text-6xl lg:text-7xl">
+              Farming{" "}
+              <span className="text-amber-400">CRS</span>
+            </h1>
+            <p className="mb-8 max-w-md text-lg leading-relaxed text-white/90">
+              Drone-powered crop reconnaissance that turns every acre into actionable insight. Monitor, analyse and optimise — from seedling to harvest.
+            </p>
+            <div className="flex flex-wrap items-center gap-4">
+              <Button size="lg" className="bg-primary hover:bg-primary/90" asChild>
+                <Link href="/signup">Get Started</Link>
+              </Button>
+              <Button size="lg" variant="outline" className="border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white" asChild>
+                <Link href="/dashboard">Watch Demo</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="border-t border-border/40 bg-muted/30 py-24">
+        <div className="container mx-auto px-4">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+              Everything You Need to Farm Smarter
+            </h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground">
+              Powerful tools and insights designed specifically for modern farmers
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <FeatureCard
+              icon={<CloudSun className="h-6 w-6" />}
+              title="Weather Monitoring"
+              description="Real-time weather data and forecasts to help you plan irrigation and harvesting schedules."
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <FeatureCard
+              icon={<BarChart3 className="h-6 w-6" />}
+              title="Crop Analytics"
+              description="Track growth stages, monitor health metrics, and analyze yield predictions for all your crops."
+            />
+            <FeatureCard
+              icon={<Brain className="h-6 w-6" />}
+              title="AI Recommendations"
+              description="Get intelligent suggestions for planting, fertilizing, and pest control based on your data."
+            />
+            <FeatureCard
+              icon={<Droplets className="h-6 w-6" />}
+              title="Soil Monitoring"
+              description="Monitor soil moisture, pH levels, and nutrient content across your entire farm."
+            />
+            <FeatureCard
+              icon={<Smartphone className="h-6 w-6" />}
+              title="Mobile Access"
+              description="Access your dashboard from anywhere with our responsive mobile interface."
+            />
+            <FeatureCard
+              icon={<Leaf className="h-6 w-6" />}
+              title="Sustainability Tracking"
+              description="Monitor your environmental impact and optimize for sustainable farming practices."
+            />
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="border-t border-border/40 py-24">
+        <div className="container mx-auto px-4">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground">
+              Choose the plan that fits your farm size and needs
+            </p>
+          </div>
+          <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
+            <PricingCard
+              title="Starter"
+              price="Free"
+              description="Perfect for small farms getting started"
+              features={[
+                "Up to 10 acres",
+                "Basic weather data",
+                "Crop tracking",
+                "Email support",
+              ]}
+            />
+            <PricingCard
+              title="Professional"
+              price="$49"
+              period="/month"
+              description="For growing farms with advanced needs"
+              features={[
+                "Up to 100 acres",
+                "Advanced analytics",
+                "AI recommendations",
+                "Soil monitoring",
+                "Priority support",
+              ]}
+              highlighted
+            />
+            <PricingCard
+              title="Enterprise"
+              price="Custom"
+              description="For large-scale agricultural operations"
+              features={[
+                "Unlimited acres",
+                "Custom integrations",
+                "Dedicated account manager",
+                "On-site training",
+                "24/7 phone support",
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="border-t border-border/40 bg-muted/30 py-24">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+            Ready to Transform Your Farm?
+          </h2>
+          <p className="mx-auto mb-8 max-w-2xl text-muted-foreground">
+            Join thousands of farmers already using AgriSense to increase yields and reduce costs.
+          </p>
+          <Button size="lg" asChild>
+            <Link href="/signup">
+              Get Started for Free
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border/40 py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                <Leaf className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <span className="font-semibold text-foreground">AgriSense</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              2026 AgriSense. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
-  );
+  )
+}
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode
+  title: string
+  description: string
+}) {
+  return (
+    <Card className="border-border/40 bg-card/50">
+      <CardContent className="p-6">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          {icon}
+        </div>
+        <h3 className="mb-2 font-semibold text-foreground">{title}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </CardContent>
+    </Card>
+  )
+}
+
+function PricingCard({
+  title,
+  price,
+  period,
+  description,
+  features,
+  highlighted,
+}: {
+  title: string
+  price: string
+  period?: string
+  description: string
+  features: string[]
+  highlighted?: boolean
+}) {
+  return (
+    <Card
+      className={`relative border-border/40 ${highlighted ? "border-primary bg-primary/5" : "bg-card/50"
+        }`}
+    >
+      {highlighted && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+          Most Popular
+        </div>
+      )}
+      <CardContent className="p-6">
+        <h3 className="mb-1 font-semibold text-foreground">{title}</h3>
+        <p className="mb-4 text-sm text-muted-foreground">{description}</p>
+        <div className="mb-6">
+          <span className="text-3xl font-bold text-foreground">{price}</span>
+          {period && <span className="text-muted-foreground">{period}</span>}
+        </div>
+        <ul className="mb-6 space-y-3">
+          {features.map((feature, index) => (
+            <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Check className="h-4 w-4 text-primary" />
+              {feature}
+            </li>
+          ))}
+        </ul>
+        <Button className="w-full" variant={highlighted ? "default" : "outline"} asChild>
+          <Link href="/signup">Get Started</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  )
 }

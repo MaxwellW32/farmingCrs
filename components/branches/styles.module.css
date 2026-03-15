@@ -16,4 +16,5 @@
     background-color: var(--bg1);
     z-index: 10;
     overflow: auto;
+    padding: 1rem;
 }

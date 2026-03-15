@@ -66,6 +66,49 @@ export const monitorEventSchema = z.object({
 })
 export type monitorEventType = z.infer<typeof monitorEventSchema>
 
+export const recommendationSchema = z.object({
+    id: z.string().min(1),
+    cropId: z.string().min(1),
+    recommendation: z.string().min(1),
+    typeObj: z.union([
+        z.object({
+            type: z.literal("elevation"),
+            recommendedVal: z.string(),
+        }),
+        z.object({
+            type: z.literal("soil-condition"),
+            recommendedVal: z.string(),
+        }),
+        z.object({
+            type: z.literal("humidity"),
+            recommendedVal: z.number(),
+        }),
+        z.object({
+            type: z.literal("temperature"),
+            recommendedVal: z.number(),
+        }),
+    ]),
+})
+export type recommendationType = z.infer<typeof recommendationSchema>
+
+
+
+
+
+//gpt
+export const makeMonitorEventResponseSchema = z.object({
+    newMonitorEvents: monitorEventSchema.array()
+})
+export type makeMonitorEventResponseType = z.infer<typeof makeMonitorEventResponseSchema>
+
+
+
+
+export const cropRecommendationsResponseSchema = z.object({
+    newRecommendations: recommendationSchema.array()
+})
+export type cropRecommendationsResponseType = z.infer<typeof cropRecommendationsResponseSchema>
+
 
 
 

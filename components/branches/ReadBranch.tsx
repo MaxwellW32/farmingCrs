@@ -1,12 +1,14 @@
 "use client"
-import { branchSchema, branchType, cropType } from '@/types'
+import { branchSchema, branchType, cropType, monitorEventType, recommendationType } from '@/types'
 import { consoleAndToastError } from '@/utility/consoleErrorWithToast'
 import { useEffect, useRef, useState } from 'react'
-import { GoogleMap, Marker, Polygon, useLoadScript } from "@react-google-maps/api"
+import { GoogleMap, Marker, Polygon, useLoadScript, Circle } from "@react-google-maps/api"
 import styles from "./styles.module.css"
 import { getCrops } from '@/serverFunctions/handleCrops'
 import { updateBranch } from '@/serverFunctions/handleBranches'
 import { getCropIcon } from '@/lib/crop'
+import { generateMonitorEvents, makeCropRecommendations } from '@/serverFunctions/handleGpt'
+import toast from 'react-hot-toast'
 
 export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
     const [branch, branchSet] = useState({ ...seenBranch })
@@ -29,6 +31,8 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
     const [search, setSearch] = useState("")
     const [selectedCrop, selectedCropSet] = useState<cropType | null>(null)
 
+    const [recommendations, recommendationsSet] = useState<recommendationType[]>([])
+
     const { isLoaded } = useLoadScript({
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY!,
         libraries: ["geometry"]
@@ -50,6 +54,32 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                 consoleAndToastError(error)
             }
         }
+        search()
+
+    }, [])
+
+    //generate monitor events - as an example
+    useEffect(() => {
+        const search = async () => {
+            try {
+                //get api test
+                const newMonitorEvents = await generateMonitorEvents({ branch })
+
+                branchSet(prev => ({
+                    ...prev,
+                    branchEvents: [...newMonitorEvents.newMonitorEvents]
+                }))
+
+                console.log(`$newMonitorEvents`, newMonitorEvents);
+
+                //sync to server
+                syncBranchToServerKeysSet(["branchEvents"])
+
+            } catch (error) {
+                consoleAndToastError(error)
+            }
+        }
+
         search()
 
     }, [])
@@ -201,6 +231,25 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
         addCrop(lat, lng)
     }
 
+    function getMonitorStyle(event: monitorEventType) {
+        switch (event.typeObj.type) {
+            case "temperature":
+                if (event.typeObj.temperature > 35) {
+                    return { fillColor: "#ef4444", strokeColor: "#b91c1c" } // hot
+                }
+                return { fillColor: "#f97316", strokeColor: "#c2410c" }
+
+            case "humidity":
+                return { fillColor: "#3b82f6", strokeColor: "#1d4ed8" }
+
+            case "soil-condition":
+                return { fillColor: "#a16207", strokeColor: "#713f12" }
+
+            case "elevation":
+                return { fillColor: "#eab308", strokeColor: "#a16207" }
+        }
+    }
+
     return (
         <div style={{ display: "grid", gridTemplateRows: "auto 1fr", overflow: "auto", zIndex: 0 }}>
             <div className={styles.navButtonRow} style={{}}>
@@ -254,6 +303,111 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                     <p className="text-xs text-muted-foreground">
                         Click the map to place crops
                     </p>
+
+                    <div className="space-y-6 mt-8">
+                        <button
+                            className="bg-primary text-primary-foreground px-5 py-2.5 rounded-md font-medium hover:bg-primary/90 transition shadow-sm"
+                            onClick={async () => {
+                                toast.loading("Generating recommendations...")
+
+                                const cropsInArea = crops.filter(eachCrop =>
+                                    branch.cropIds.some(eachBranchCrop => eachBranchCrop.referencedCropId === eachCrop.id)
+                                )
+
+                                const newRecommendations = await makeCropRecommendations({
+                                    branch,
+                                    crops: cropsInArea,
+                                    monitorEvents: branch.branchEvents
+                                })
+
+                                recommendationsSet(prev => [
+                                    ...prev,
+                                    ...newRecommendations.newRecommendations
+                                ])
+                            }}
+                        >
+                            Generate Recommendations
+                        </button>
+
+                        {recommendations.length > 0 && (
+                            <div className="grid gap-4 md:grid-cols-2">
+                                {recommendations.map(eachRec => {
+
+                                    const seenCrop = crops.find(c => c.id === eachRec.cropId)
+                                    if (!seenCrop) return null
+
+                                    const type = eachRec.typeObj.type
+
+                                    const badgeColors: Record<string, string> = {
+                                        elevation: "bg-yellow-100 text-yellow-700",
+                                        "soil-condition": "bg-amber-100 text-amber-700",
+                                        humidity: "bg-blue-100 text-blue-700",
+                                        temperature: "bg-red-100 text-red-700"
+                                    }
+
+                                    return (
+                                        <div
+                                            key={eachRec.id}
+                                            className="border border-border/40 rounded-lg p-5 bg-card shadow-sm space-y-3"
+                                        >
+                                            {/* Header */}
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="font-semibold text-lg text-foreground">
+                                                    {seenCrop.name}
+                                                </h4>
+
+                                                <span
+                                                    className={`text-xs px-2 py-1 rounded-full font-medium ${badgeColors[type]}`}
+                                                >
+                                                    {type.replace("-", " ")}
+                                                </span>
+                                            </div>
+
+                                            {/* Recommendation */}
+                                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                                {eachRec.recommendation}
+                                            </p>
+
+                                            {/* Adjustment Button (if applicable) */}
+                                            {type === "humidity" && (
+                                                <button
+                                                    className="mt-2 text-sm bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition"
+                                                    onClick={() => {
+                                                        branchSet(prevBranch => {
+                                                            const newBranch = { ...prevBranch }
+
+                                                            //@ts-expect-error type
+                                                            newBranch.branchEvents = newBranch.branchEvents.map(eachBE => {
+
+                                                                if (eachBE.typeObj.type === "humidity") {
+                                                                    return {
+                                                                        ...eachBE,
+                                                                        typeObj: {
+                                                                            ...eachBE.typeObj,
+                                                                            humidity: `${eachRec.typeObj.recommendedVal}`
+                                                                        }
+                                                                    }
+                                                                }
+
+                                                                return eachBE
+                                                            })
+
+                                                            return newBranch
+                                                        })
+
+                                                    }}
+                                                >
+                                                    Apply Recommended Humidity
+                                                </button>
+
+                                            )}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+
+                        )}
+                    </div>
                 </div>
 
                 <div>
@@ -316,6 +470,30 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                                             if (!e.latLng) return
 
                                             updateCropPosition(cropIndex, e.latLng.lat(), e.latLng.lng())
+                                        }}
+                                    />
+                                )
+                            })}
+
+
+                            {branch.branchEvents.map((event) => {
+
+                                const style = getMonitorStyle(event)
+
+                                return (
+                                    <Circle
+                                        key={event.id}
+                                        center={{
+                                            lat: event.coordinates.latitude,
+                                            lng: event.coordinates.longitude
+                                        }}
+                                        radius={event.size}
+                                        options={{
+                                            fillColor: style.fillColor,
+                                            fillOpacity: 0.35,
+                                            strokeColor: style.strokeColor,
+                                            strokeWeight: 2,
+                                            clickable: true
                                         }}
                                     />
                                 )

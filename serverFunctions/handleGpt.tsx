@@ -1,50 +1,62 @@
-// "use server"
+"use server"
 
-// import { cropType } from "@/types";
+import { chosenGptModel, openai } from "@/lib/openai";
+import { branchType, cropRecommendationsResponseSchema, cropRecommendationsResponseType, cropType, makeMonitorEventResponseSchema, makeMonitorEventResponseType, monitorEventType } from "@/types";
+import { zodTextFormat } from "openai/helpers/zod";
 
-// export async function generateMonitorEvents({ crops }: { crops: cropType[] }): Promise<makeGradeInteractiveSubGoalResponseType> {
-//     const instructions = `You are evaluating whether the player successfully completed a subGoal during a conversation.
+export async function generateMonitorEvents({ branch }: { branch: branchType }): Promise<makeMonitorEventResponseType> {
+    const instructions = `Generate monitor events for this plot of land - look at the branch stats and using the latitude/longitude choose elevation, soil-condition, humidity and temperature events that would be realistic for this plot of land. 
+   
+    Latitude: ${branch.boundingPins[0].coordinates.latitude}
+    Longitude: ${branch.boundingPins[0].coordinates.longitude}
 
-// Your task is to determine if the player achieved the subGoal.
+    sometime include areas of high humidity or temperature were using it as testing data to recommend status updates on crops in the area
+   `
+    console.log(`$instructions`, instructions);
 
-// Evaluation rules:
+    const response = await openai.responses.parse({
+        model: chosenGptModel,
+        instructions: instructions,
+        input: `Please generate realistic monitor events`,
+        text: {
+            format: zodTextFormat(makeMonitorEventResponseSchema, "makeMonitorEventResponseSchema"),
+        },
+    });
 
-// 1. The player must clearly attempt to achieve the goal.
-// 2. The target character must logically accept or agree.
-// 3. The conversation must reach a clear outcome.
+    //validate
+    const validatedResponse = makeMonitorEventResponseSchema.parse(response.output_parsed)
 
-// If the character would realistically refuse, the goal is NOT complete.
+    return validatedResponse
+}
 
-// Be faithful to the character's personality and motivations.
+export async function makeCropRecommendations({ branch, crops, monitorEvents }: { branch: branchType; crops: cropType[], monitorEvents: monitorEventType[] }): Promise<cropRecommendationsResponseType> {
+    const instructions = `Please monitor the current events affecting this plot of land
+   
+    Latitude: ${branch.boundingPins[0].coordinates.latitude}
+    Longitude: ${branch.boundingPins[0].coordinates.longitude}
 
-// Do NOT be generous. Only mark complete if the goal was clearly achieved.
+  Based on the humidiy, temperature, elevation and soil conditions please recommend any changes to the crops in the area. Look at the array below to see what the crops prefer. Our goal is to ensure crops stay healthy and produce the best yield possible. 
+  monitorEvents:
+  ${JSON.stringify(monitorEvents)}
 
-// Player = the user.
+  Crops:
+  ${JSON.stringify(crops)}
 
-// SubGoal:
-// ${JSON.stringify(subGoal)}
+  do not hallucinate crop id's they are used to match back the crop later, please take exactly from the crops array
+   `
+    console.log(`$instructions`, instructions);
 
-// Characters:
-// ${JSON.stringify(characters)}
+    const response = await openai.responses.parse({
+        model: chosenGptModel,
+        instructions: instructions,
+        input: `Please generate recomendations for the if any crops are afefcted by adverse monitor events.`,
+        text: {
+            format: zodTextFormat(cropRecommendationsResponseSchema, "cropRecommendationsResponse"),
+        },
+    });
 
-// Previous Story Sections:
-// ${JSON.stringify(prevSections)}
+    //validate
+    const validatedResponse = cropRecommendationsResponseSchema.parse(response.output_parsed)
 
-// Chat Messages:
-// ${JSON.stringify(prevChatMessages)}`
-//     console.log(`$instructions`, instructions);
-
-//     const response = await openai.responses.parse({
-//         model: chosenGptModel,
-//         instructions: instructions,
-//         input: `Determine whether this subGoal was complete or not`,
-//         text: {
-//             format: zodTextFormat(makeGradeInteractiveSubGoalResponseSchema, "makeGradeInteractiveSubGoalResponse"),
-//         },
-//     });
-
-//     //validate
-//     const validatedResponse = makeGradeInteractiveSubGoalResponseSchema.parse(response.output_parsed)
-
-//     return validatedResponse
-// }
+    return validatedResponse
+}

@@ -297,6 +297,8 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                                 const seenCrop = crops.find(eachCropFind => eachCropFind.id === eachCropIdObj.referencedCropId)
                                 if (seenCrop === undefined) return null
 
+                                const seenCropIcon = getCropIcon(seenCrop.name)
+
                                 return (
                                     <Marker
                                         key={eachCropIdObj.id}
@@ -305,7 +307,7 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                                             lng: eachCropIdObj.corrdinates.longitude
                                         }}
                                         zIndex={1000}
-                                        label={{
+                                        label={seenCropIcon === undefined ? undefined : {
                                             text: getCropIcon(seenCrop.name) ?? "",
                                             fontSize: "20px"
                                         }}

@@ -8,6 +8,7 @@
 //see data...
 //add crops
 //add logout
+//get pages working
 //1 ai feature
 //branch acres function
 //function to find acres

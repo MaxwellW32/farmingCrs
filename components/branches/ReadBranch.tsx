@@ -100,6 +100,8 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                 const recCrops = await rcCropsRes.json()
                 console.log(`$recCrops`, recCrops);
 
+                toast.success(`${recCrops.suggestions[0]["crop_name"]} would be good in this area!`)
+
                 recSet(recCrops)
 
             } catch (error) {
@@ -330,9 +332,8 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                         </button>
 
                         {recommendations.length > 0 && (
-                            <div className="grid gap-4 md:grid-cols-2">
+                            <div style={{ display: "grid", alignContent: "flex-start", gap: "1rem" }}>
                                 {recommendations.map(eachRec => {
-
                                     const seenCrop = crops.find(c => c.id === eachRec.cropId)
                                     if (!seenCrop) return null
 
@@ -346,8 +347,7 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                                     }
 
                                     return (
-                                        <div
-                                            key={eachRec.id}
+                                        <div key={eachRec.id}
                                             className="border border-border/40 rounded-lg p-5 bg-card shadow-sm space-y-3"
                                         >
                                             {/* Header */}

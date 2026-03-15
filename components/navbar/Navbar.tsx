@@ -32,11 +32,7 @@ const navMenu: navMenuItem[] = [
         link: "/profile",
         subMenu: []
     },
-    {
-        title: "support",
-        link: "/support",
-        subMenu: []
-    },
+    
 ]
 
 export default function Navbar({ session }: { session: Session | null }) {

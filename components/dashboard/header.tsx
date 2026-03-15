@@ -41,20 +41,11 @@ export function DashboardHeader() {
               <path d="M7 14v.01" />
             </svg>
           </div>
-          <span className="text-lg font-bold text-foreground">Farming CRS</span>
+          <span className="text-lg font-bold text-foreground"></span>
         </Link>
       </div>
 
-      <div className="hidden flex-1 items-center justify-center px-4 md:flex md:max-w-md lg:max-w-lg">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search crops, fields, reports..."
-            className="w-full bg-secondary pl-10"
-          />
-        </div>
-      </div>
+     
 
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon" className="relative">

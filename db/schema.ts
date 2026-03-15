@@ -34,7 +34,6 @@ export const branches = pgTable("branches", {
     userId: text("userId").notNull().references(() => users.id),
     name: text("name").notNull(),
     boundingPins: json("boundingPins").$type<branchType["boundingPins"]>().default([]).notNull(),
-    location: text("location").notNull(),
 },
     (table) => {
         return {

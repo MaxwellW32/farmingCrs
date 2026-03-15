@@ -9,6 +9,7 @@ import React, { useEffect, useState } from "react"
 import { getCrops } from "@/serverFunctions/handleCrops"
 import { consoleAndToastError } from "@/utility/consoleErrorWithToast"
 import Link from "next/link"
+import { coordsToString } from "@/utility/contextHelpers"
 
 // export interface BranchDetail {
 //   id: string
@@ -79,7 +80,7 @@ export function BranchCard({ branch }: { branch: branchType }) {
           <h3 className="text-xl font-bold text-foreground mb-1">{branch.name}</h3>
           <div className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="size-4" />
-            <span className="text-sm">{branch.location}</span>
+            <span className="text-sm">{coordsToString(branch.boundingPins[0].coordinates)}</span>
           </div>
         </div>
       </div>

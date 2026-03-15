@@ -69,7 +69,6 @@ export default function AddBranch({ user }: { user: userType }) {
             pins.reduce((sum, p) => sum + p.lng, 0) / pins.length
 
         const newBranch: newBranchType = {
-            location: `${centerLat},${centerLng}`,
             boundingPins: pins.map((p) => ({
                 coordinates: {
                     latitude: p.lat,

@@ -13,6 +13,7 @@ export const coordinatesSchema = z.object({
     latitude: z.number(),
     longitude: z.number(),
 })
+export type coordinatesType = z.infer<typeof coordinatesSchema>
 
 
 
@@ -143,7 +144,6 @@ export const branchSchema = z.object({
     userId: userSchema.shape.id,
     name: z.string().min(1, "please enter a branch name"),
     boundingPins: boundingPinSchema.array().min(3),
-    location: z.string().min(1),
 })
 export type branchType = z.infer<typeof branchSchema> & {
     fromUser?: userType,

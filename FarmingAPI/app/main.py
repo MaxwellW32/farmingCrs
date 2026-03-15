@@ -311,3 +311,93 @@ async def get_weather_forecast(lat: float, lon: float):
     except Exception as e:
         print(f"Forecast Error: {e}")
         return [] # Always return a list, even on failure
+    
+@app.get("/crop-analysis/{crop_id}")
+async def get_single_crop_status(crop_id: str, temp: float, humidity: float):
+    """
+    Calculates biological status for one specific crop based on 
+    provided environmental metrics.
+    """
+    with SessionLocal() as db:
+        crop = db.query(Crops).filter(Crops.id == crop_id).first()
+        
+        if not crop:
+            raise HTTPException(status_code=404, detail="Crop not found in database")
+
+        # 1. Calculate Health Metrics
+        vpd = calculate_vpd(temp, humidity)
+        
+        # 2. Check "Comfort Zones"
+        temp_status = "OPTIMAL" if crop.optLow <= temp <= crop.optHigh else "STRESS"
+        if temp < crop.minTemp or temp > crop.maxTemp:
+            temp_status = "CRITICAL"
+
+        # 3. Generate Crop-Specific AI Insight
+        # We pass only this crop to the AI for a specialized medical-style report
+        stats = {"temperature": temp, "humidity": humidity, "vpd": vpd}
+        
+        # We simulate a single alert for the AI to react to if status isn't optimal
+        mock_alerts = []
+        if temp_status != "OPTIMAL":
+            mock_alerts.append({"message": f"Temperature of {temp}°C is outside the {crop.name} ideal range."})
+
+        ai_report = await get_ai_agronomist_advice(stats, mock_alerts, crop.name)
+
+        return {
+            "crop_name": crop.name,
+            "biological_targets": {
+                "ideal_temp": f"{crop.optLow}°C - {crop.optHigh}°C",
+                "ideal_humidity": f"{crop.idealHumidity}%",
+                "ideal_vpd": "0.8 - 1.2 kPa"
+            },
+            "current_performance": {
+                "temp_status": temp_status,
+                "vpd_value": vpd,
+                "is_viable": crop.minTemp <= temp <= crop.maxTemp
+            },
+            "agronomist_report": ai_report
+        }
+    
+@app.get("/crop-analysis/local-check/{crop_name}")
+async def check_crop_at_location(crop_name: str, lat: float, lon: float):
+    """
+    Checks if a specific crop can survive the current real-world 
+    weather at the provided coordinates.
+    """
+    # 1. Fetch real-time weather for the location
+    weather_data = await get_weather(lat, lon)
+    stats = weather_data["stats"]
+    temp = stats["temperature"]
+    humidity = stats["humidity"]
+
+    with SessionLocal() as db:
+        # 2. Fuzzy search for the crop
+        crop = db.query(Crops).filter(Crops.name.ilike(f"%{crop_name}%")).first()
+        
+        if not crop:
+            raise HTTPException(status_code=404, detail=f"Crop '{crop_name}' not found.")
+
+        # 3. Run the Biological Logic
+        vpd = calculate_vpd(temp, humidity)
+        
+        status = "OPTIMAL"
+        if temp < crop.optLow or temp > crop.optHigh:
+            status = "STRESS"
+        if temp < crop.minTemp or temp > crop.maxTemp:
+            status = "CRITICAL"
+
+        # 4. Get AI Insight based on REAL weather
+        ai_context = {**stats, "vpd": vpd}
+        mock_alerts = [{"message": f"Real-world check: {temp}°C at lat {lat}."}]
+        ai_report = await get_ai_agronomist_advice(ai_context, mock_alerts, crop.name)
+
+        return {
+            "location": {"lat": lat, "lon": lon},
+            "weather_at_site": stats,
+            "crop_match": crop.name,
+            "analysis": {
+                "status": status,
+                "vpd": f"{vpd} kPa",
+                "ai_insight": ai_report
+            }
+        }

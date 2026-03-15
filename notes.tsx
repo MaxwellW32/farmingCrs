@@ -7,6 +7,7 @@
 //select branch...
 //see data...
 //add crops
+//add logout
 //1 ai feature
 //branch acres function
 //function to find acres

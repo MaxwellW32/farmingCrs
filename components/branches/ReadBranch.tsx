@@ -29,12 +29,6 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
     const [search, setSearch] = useState("")
     const [selectedCrop, selectedCropSet] = useState<cropType | null>(null)
 
-    //best times of year yield / plant different things
-    //live alerts
-    //show recommended crops along with viability
-    //add crops to the branch
-    //ai looks at crop fullness time, gives advice on whether can stay go
-
     const { isLoaded } = useLoadScript({
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY!,
         libraries: ["geometry"]
@@ -44,8 +38,6 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
         width: "100%",
         height: "100%"
     }
-
-    console.log(`$branch`, branch);
 
     //get crops
     useEffect(() => {

@@ -70,7 +70,7 @@ export default function Page() {
                         </h3>
 
                         <p className="text-muted-foreground">
-                            Each branch displays crops growing in that area, along with
+                            Each branch displays types of crops growing in that area, along with
                             insights about soil health, growth progress, and recommended
                             planting strategies.
                         </p>

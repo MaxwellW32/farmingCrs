@@ -104,7 +104,7 @@ export default function Home() {
               </Button>
 
               <Button size="lg" variant="outline" className="border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white" asChild>
-                <Link href="/demo">Watch Demo</Link>
+                <Link href="/demo">About Us</Link>
               </Button>
             </div>
           </div>
@@ -170,40 +170,37 @@ export default function Home() {
           </div>
           <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-3">
             <PricingCard
-              title="Starter"
-              price="Free"
-              description="Perfect for small farms getting started"
+              title="Small Indoor Farm 0 – 50 m²"
+              price="$3,100/month"
+              description="Set Up Cost $31,100"
               features={[
-                "Up to 10 acres",
-                "Basic weather data",
-                "Crop tracking",
-                "Email support",
+                "Environmental Monitoring",
+                "AI farming recommendations",
+                "Alerts for temperature, humidity, and soil issues",
+                "Automated initiation to each Alerts"
               ]}
             />
             <PricingCard
-              title="Professional"
-              price="$49"
-              period="/month"
-              description="For growing farms with advanced needs"
+              title="Medium Indoor Farm 50 – 200 m²"
+              price="$7,800/month"
+              description="Setup Cost: $78,400"
               features={[
-                "Up to 100 acres",
-                "Advanced analytics",
-                "AI recommendations",
-                "Soil monitoring",
-                "Priority support",
+                "Environmental Monitoring",
+                "AI farming recommendations",
+                "Alerts for temperature, humidity, and soil issues",
+                "Automated initiation to each Alerts"
               ]}
               highlighted
             />
             <PricingCard
-              title="Enterprise"
-              price="Custom"
-              description="For large-scale agricultural operations"
+              title=" Large Indoor Farm 200 m² +"
+              price="$15,700/month"
+              description="Setup Cost: $156,900"
               features={[
-                "Unlimited acres",
-                "Custom integrations",
-                "Dedicated account manager",
-                "On-site training",
-                "24/7 phone support",
+                "Environmental Monitoring",
+                "AI farming recommendations",
+                "Alerts for temperature, humidity, and soil issues",
+                "Automated initiation to each Alerts"
               ]}
             />
           </div>

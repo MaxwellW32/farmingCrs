@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 import httpx
-from database import SessionLocal, Users
+from database import SessionLocal, Users, Crops
 
 app = FastAPI()
 
@@ -254,3 +254,44 @@ async def get_crs_analysis(lat: float, lon: float):
         "advice": "Irrigation recommended" if stats['precipitation'] == 0 else "Rain detected"
     }
 
+@app.get("/recommendations", tags=["CRS Engine"])
+async def get_recommendations(lat: float, lon: float):
+    # 1. Fetch live weather
+    weather_response = await get_weather(lat, lon)
+    current_temp = weather_response["stats"]["temperature"]
+    
+    with SessionLocal() as db:
+        # 2. Filter crops based on the DB your admin populated
+        # Automap handles the fact that 'id' is a UUID automatically
+        viable_crops = db.query(Crops).filter(
+            Crops.minTemp <= current_temp,
+            Crops.maxTemp >= current_temp
+        ).all()
+        
+        recommendations = []
+        for crop in viable_crops:
+            is_optimal = crop.optLow <= current_temp <= crop.optHigh
+            
+            recommendations.append({
+                "id": str(crop.id), # Explicitly cast UUID to string for JSON safety
+                "crop_name": crop.name,
+                "suitability": "OPTIMAL" if is_optimal else "VIABLE",
+                "advice": f"Ideal range: {crop.optLow}°C - {crop.optHigh}°C",
+                "humidity_target": f"{crop.idealHumidity}%"
+            })
+            
+        result = {
+            "metadata": {
+                "lat": lat,
+                "lon": lon,
+                "current_temp": f"{current_temp}°C",
+                "weather_condition": "Fetched via Open-Meteo"
+            },
+            "count": len(recommendations),
+            "suggestions": recommendations
+        }
+
+        if not recommendations:
+            result["message"] = "No suitable crops found for this climate."
+            
+        return result

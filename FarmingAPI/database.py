@@ -18,16 +18,9 @@ engine = create_engine(DATABASE_URL, future=True)
 Base = automap_base()
 Base.prepare(autoload_with=engine)
 Users = Base.classes.users
+Crops = Base.classes.crops
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
-#Crops = Base.classes.crops
-# 3. Expose the tables as classes
-# This is the "magic" part. If your friend has a table named 'crops', 
-# it's now accessible as Base.classes.crops
-try:
-    all_tables = Base.classes.keys()
-    print(f"Successfully reflected tables: {all_tables}")
-except Exception as e:
-    print(f"Error reflecting tables: {e}")
+
 
 
     

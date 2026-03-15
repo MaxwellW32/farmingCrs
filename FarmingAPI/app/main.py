@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException
 import httpx
 import math
+import os
 import uuid
+from dotenv import load_dotenv
 import models
 import json
 import openai # NEW: Ensure you pip install openai
@@ -9,10 +11,10 @@ from database import SessionLocal, Crops
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-
+load_dotenv()
 # Replace with your actual key or use an environment variable (recommended)
 # os.getenv("OPENAI_API_KEY")
-client = openai.OpenAI(api_key="")
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app.add_middleware(
     CORSMiddleware,
@@ -174,37 +176,6 @@ async def get_weather(lat: float, lon: float):
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/crs-analysis", tags=["CRS Engine"])
-async def get_crs_analysis(lat: float, lon: float):
-    weather = await get_weather(lat, lon)
-    stats = weather["stats"]
-    
-    with SessionLocal() as db:
-        # 1. Perform the core analysis
-        suitability = analyze_crop_suitability(db, stats['temperature'], stats['humidity'])
-        disease_risk = check_disease_risk(stats['temperature'], stats['humidity'])
-        
-        # 2. Get DB bounds to check for extreme conditions
-        # We check the absolute minimum temperature any crop in your DB can survive
-        min_crop_temp = db.query(Crops.minTemp).order_by(Crops.minTemp.asc()).first()
-        min_threshold = min_crop_temp[0] if min_crop_temp else 0
-
-    # 3. Determine Smart Advice
-    if stats['temperature'] < min_threshold:
-        advice = f"Extreme Cold Alert: Temp is {stats['temperature']}°C. Unsuitable for all registered crops."
-    elif stats['temperature'] > 45:
-        advice = "Extreme Heat Alert: High risk of crop failure due to thermal stress."
-    elif stats['precipitation'] == 0:
-        advice = "No rain detected; irrigation recommended based on soil requirements."
-    else:
-        advice = "Rainfall detected; suspend manual irrigation to prevent waterlogging."
-
-    return {
-        "current_weather": stats,
-        "crop_suitability": suitability,
-        "disease_outlook": disease_risk,
-        "advice": advice
-    }
 
 @app.get("/recommendations", tags=["CRS Engine"])
 async def get_recommendations(lat: float, lon: float):
@@ -307,3 +278,36 @@ async def add_crop_via_ai(crop_name: str):
         db.add(new_crop)
         db.commit()
     return {"status": "success"}
+
+@app.get("/weather-forecast")
+async def get_weather_forecast(lat: float, lon: float):
+    try:
+        url = "https://api.open-meteo.com/v1/forecast"
+        params = {
+            "latitude": lat, "longitude": lon,
+            "daily": "temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_sum",
+            "timezone": "auto",
+            "forecast_days": 3
+        }
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params)
+            data = response.json()
+            
+            # Check if 'daily' exists in the response
+            if "daily" not in data:
+                return [] # Return empty list so .map() doesn't crash
+                
+            daily = data["daily"]
+            forecast = []
+            for i in range(len(daily.get("time", []))):
+                forecast.append({
+                    "date": daily["time"][i],
+                    "max_temp": daily["temperature_2m_max"][i],
+                    "min_temp": daily["temperature_2m_min"][i],
+                    "uv": daily["uv_index_max"][i],
+                    "rain": daily["precipitation_sum"][i]
+                })
+            return forecast
+    except Exception as e:
+        print(f"Forecast Error: {e}")
+        return [] # Always return a list, even on failure

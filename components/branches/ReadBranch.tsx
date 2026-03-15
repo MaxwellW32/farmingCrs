@@ -9,6 +9,9 @@ import { updateBranch } from '@/serverFunctions/handleBranches'
 import { getCropIcon } from '@/lib/crop'
 import { generateMonitorEvents, makeCropRecommendations } from '@/serverFunctions/handleGpt'
 import toast from 'react-hot-toast'
+import { RealtimeSession } from '@openai/agents/realtime';
+import { RealtimeAgent } from '@openai/agents/realtime';
+import { makeEKKey } from '@/serverFunctions/handleEkKey'
 
 export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
     const [branch, branchSet] = useState({ ...seenBranch })
@@ -32,6 +35,7 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
     const [selectedCrop, selectedCropSet] = useState<cropType | null>(null)
 
     const [recommendations, recommendationsSet] = useState<recommendationType[]>([])
+    const sessionRef = useRef<RealtimeSession | null>(null)
 
     const { isLoaded } = useLoadScript({
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY!,
@@ -42,6 +46,9 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
         width: "100%",
         height: "100%"
     }
+
+    const [muted, setMuted] = useState(false)
+    const streamRef = useRef<MediaStream | null>(null)
 
     //get crops
     useEffect(() => {
@@ -252,6 +259,21 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
         }
     }
 
+    async function startMic() {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        streamRef.current = stream
+    }
+
+    function toggleMute() {
+        if (!streamRef.current) return
+
+        streamRef.current.getAudioTracks().forEach(track => {
+            track.enabled = muted // enable when unmuted
+        })
+
+        setMuted(!muted)
+    }
+
     return (
         <div style={{ display: "grid", gridTemplateRows: "auto 1fr", overflow: "auto", zIndex: 0 }}>
             <div className={styles.navButtonRow} style={{}}>
@@ -266,8 +288,59 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
 
             <div style={{ display: "grid", overflow: "auto", position: "relative", gridTemplateRows: "1fr" }}>
                 <div className={styles.sideMenu} style={{ display: showingSideMenu ? "grid" : "none", }}>
-                    <p>{branch.name}</p>
-                    {/* main nav */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                        <p>{branch.name}</p>
+
+                        <button
+                            onClick={async () => {
+                                // close previous session
+                                if (sessionRef.current) {
+                                    sessionRef.current.close()
+                                    sessionRef.current = null
+                                }
+
+                                startMic()
+
+                                const agent = new RealtimeAgent({
+                                    name: "Assistant",
+                                    instructions: `Talk in english at all times. You are a helpful assistant. Please give advice on what crops you'd recommend planting in my areas based on all the stats
+
+                               Latitude,Longitude
+                                ${seenBranch.boundingPins[0].coordinates.latitude},${seenBranch.boundingPins[0].coordinates.longitude}
+                                
+                                Crops:
+                                ${JSON.stringify(crops)}
+
+                                Look at any branch events as active alerts suggest ways to handle them. Talk naturally and friendly.
+                                `,
+                                    voice: "coral"
+                                })
+
+                                const session = new RealtimeSession(agent, {
+                                    model: "gpt-realtime"
+                                })
+
+                                const seenEkKey = await makeEKKey()
+
+                                await session.connect({ apiKey: seenEkKey })
+
+                                // listening to the history_updated event
+                                session.on('history_updated', (history) => {
+                                    // returns the full history of the session
+                                    console.log(history);
+                                });
+
+                                sessionRef.current = session
+                            }}
+                        >
+                            <svg className='svgIcon' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M320 64C267 64 224 107 224 160L224 288C224 341 267 384 320 384C373 384 416 341 416 288L416 160C416 107 373 64 320 64zM176 248C176 234.7 165.3 224 152 224C138.7 224 128 234.7 128 248L128 288C128 385.9 201.3 466.7 296 478.5L296 528L248 528C234.7 528 224 538.7 224 552C224 565.3 234.7 576 248 576L392 576C405.3 576 416 565.3 416 552C416 538.7 405.3 528 392 528L344 528L344 478.5C438.7 466.7 512 385.9 512 288L512 248C512 234.7 501.3 224 488 224C474.7 224 464 234.7 464 248L464 288C464 367.5 399.5 432 320 432C240.5 432 176 367.5 176 288L176 248z" /></svg>
+                        </button>
+
+                        <button onClick={toggleMute}>
+                            {muted ? "Unmute Mic" : "Mute Mic"}
+                        </button>
+                    </div>
+
                     <h3 className="font-semibold">Crops</h3>
 
                     <input

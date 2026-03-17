@@ -9,7 +9,7 @@ import { branchType, cropType } from "@/types"
 import React, { useEffect, useState } from "react"
 import { consoleAndToastError } from "@/utility/consoleErrorWithToast"
 import { getCrops } from "@/serverFunctions/handleCrops"
-import { coordsToString } from "@/utility/contextHelpers"
+import { coordsToString, getSizeFromCoords } from "@/utility/contextHelpers"
 
 // interface Branch {
 //   id: string
@@ -110,7 +110,7 @@ export function BranchesList({ branches }: { branches: branchType[] }) {
               <div className="flex flex-row sm:flex-col gap-4 sm:gap-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Sun className="size-4 text-accent" />
-                  <span>{"2"} acres</span>
+                  <span>{getSizeFromCoords(branch.boundingPins).acres.toFixed(2)} acres</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Droplets className="size-4 text-primary" />

@@ -41,7 +41,7 @@ export const boundingPinSchema = z.object({
 })
 export type boundingPinType = z.infer<typeof boundingPinSchema>
 
-export const monitorEventSchema = z.object({
+export const branchEventSchema = z.object({
     id: z.string().min(1),
     typeObj: z.union([
         z.object({
@@ -64,7 +64,7 @@ export const monitorEventSchema = z.object({
     coordinates: coordinatesSchema,
     size: z.number()
 })
-export type monitorEventType = z.infer<typeof monitorEventSchema>
+export type branchEventType = z.infer<typeof branchEventSchema>
 
 export const recommendationSchema = z.object({
     id: z.string().min(1),
@@ -96,10 +96,10 @@ export type recommendationType = z.infer<typeof recommendationSchema>
 
 
 //gpt
-export const makeMonitorEventResponseSchema = z.object({
-    newMonitorEvents: monitorEventSchema.array()
+export const makeBranchEventResponseSchema = z.object({
+    newBranchEvents: branchEventSchema.array()
 })
-export type makeMonitorEventResponseType = z.infer<typeof makeMonitorEventResponseSchema>
+export type makeBranchEventResponseType = z.infer<typeof makeBranchEventResponseSchema>
 
 
 
@@ -193,7 +193,7 @@ export const branchSchema = z.object({
         referencedCropId: z.string().min(1),
         corrdinates: coordinatesSchema
     }).array(),
-    branchEvents: monitorEventSchema.array(),
+    branchEvents: branchEventSchema.array(),
 
     userId: userSchema.shape.id,
     name: z.string().min(1, "please enter a branch name"),

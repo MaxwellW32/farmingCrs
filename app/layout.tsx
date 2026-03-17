@@ -49,13 +49,11 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SessionProvider session={session}>
-
           <Toaster position="top-center" reverseOrder={false} />
           <Navbar session={session} />
+
           {children}
           <Analytics />
         </SessionProvider>

@@ -32,25 +32,32 @@ const navMenu: navMenuItem[] = [
         link: "/profile",
         subMenu: []
     },
-    
+
 ]
 
+function LoginButtons() {
+    return (
+        <div className="flex items-center gap-3">
+            <Button variant="ghost" asChild>
+                <Link href="/login">Log in</Link>
+            </Button>
+
+            <Button asChild>
+                <Link href="/login">Get Started</Link>
+            </Button>
+        </div>
+    )
+}
+
 export default function Navbar({ session }: { session: Session | null }) {
+
     return (
         <div className={styles.navCont}>
             <nav className={styles.desktopNav}>
                 <Logo />
 
                 {session === null && (
-                    <div className="flex items-center gap-3">
-                        <Button variant="ghost" asChild>
-                            <Link href="/login">Log in</Link>
-                        </Button>
-
-                        <Button asChild>
-                            <Link href="/login">Get Started</Link>
-                        </Button>
-                    </div>
+                    <LoginButtons />
                 )}
 
                 <ul className={styles.menu}>
@@ -76,15 +83,9 @@ export default function Navbar({ session }: { session: Session | null }) {
                 {/* use checkbox styling to hide the menu */}
                 <input id='mobileMenuCheckbox' className={`visibilityCheckbox ${styles.visibilityCheckbox}`} type="checkbox" />
                 <div className={styles.popupMenu}>
-                    <div className="flex items-center gap-3">
-                        <Button variant="ghost" asChild>
-                            <Link href="/login">Log in</Link>
-                        </Button>
-
-                        <Button asChild>
-                            <Link href="/signup">Get Started</Link>
-                        </Button>
-                    </div>
+                    {session === null && (
+                        <LoginButtons />
+                    )}
 
                     <ul className={styles.menu}>
                         {navMenu.map((eachMenuItem, eachMenuItemIndex) => {

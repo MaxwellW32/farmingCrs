@@ -1,5 +1,5 @@
 "use client"
-import { branchSchema, branchType, cropType, monitorEventType, recommendationType } from '@/types'
+import { branchSchema, branchType, cropType, branchEventType, recommendationType } from '@/types'
 import { consoleAndToastError } from '@/utility/consoleErrorWithToast'
 import { useEffect, useRef, useState } from 'react'
 import { GoogleMap, Marker, Polygon, useLoadScript, Circle } from "@react-google-maps/api"
@@ -7,11 +7,12 @@ import styles from "./styles.module.css"
 import { getCrops } from '@/serverFunctions/handleCrops'
 import { updateBranch } from '@/serverFunctions/handleBranches'
 import { getCropIcon } from '@/lib/crop'
-import { generateMonitorEvents, makeCropRecommendations } from '@/serverFunctions/handleGpt'
+import { generateBranchEvents, makeCropRecommendations } from '@/serverFunctions/handleGpt'
 import toast from 'react-hot-toast'
 import { RealtimeSession } from '@openai/agents/realtime';
 import { RealtimeAgent } from '@openai/agents/realtime';
 import { makeEKKey } from '@/serverFunctions/handleEkKey'
+import { getCropsSeenInBranch, getSizeFromCoords } from '@/utility/contextHelpers'
 
 export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
     const [branch, branchSet] = useState({ ...seenBranch })
@@ -19,7 +20,6 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
     const syncBranchToServerDebounce = useRef<{ [key: string]: NodeJS.Timeout | undefined }>({})
     const [syncBranchToServerKeys, syncBranchToServerKeysSet] = useState<(keyof branchType)[] | undefined>(undefined)
 
-    const [rec, recSet] = useState<unknown | undefined>(undefined)
     const [showingSideMenu, showingSideMenuSet] = useState(false)
     const [pins,] = useState(() => {
         return branch.boundingPins.map(each => {
@@ -35,7 +35,7 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
     const [selectedCrop, selectedCropSet] = useState<cropType | null>(null)
 
     const [recommendations, recommendationsSet] = useState<recommendationType[]>([])
-    const sessionRef = useRef<RealtimeSession | null>(null)
+    const [audioSession, audioSessionSet] = useState<RealtimeSession | null>(null)
 
     const { isLoaded } = useLoadScript({
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY!,
@@ -46,9 +46,6 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
         width: "100%",
         height: "100%"
     }
-
-    const [muted, setMuted] = useState(false)
-    const streamRef = useRef<MediaStream | null>(null)
 
     //get crops
     useEffect(() => {
@@ -65,19 +62,22 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
 
     }, [])
 
-    //generate monitor events - as an example
+    //generate branch events - as an example
     useEffect(() => {
         const search = async () => {
             try {
+                //only run if no branch events
+                if (branch.branchEvents.length !== 0) return
+
                 //get api test
-                const newMonitorEvents = await generateMonitorEvents({ branch })
+                const newBranchEvents = await generateBranchEvents({ branch })
 
                 branchSet(prev => ({
                     ...prev,
-                    branchEvents: [...newMonitorEvents.newMonitorEvents]
+                    branchEvents: [...newBranchEvents.newBranchEvents]
                 }))
 
-                console.log(`$newMonitorEvents`, newMonitorEvents);
+                console.log(`$newBranchEvents`, newBranchEvents);
 
                 //sync to server
                 syncBranchToServerKeysSet(["branchEvents"])
@@ -91,25 +91,20 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
 
     }, [])
 
-    //test api
+    //crop suggestions python api
     useEffect(() => {
         const search = async () => {
             try {
                 //get api test
                 const base = process.env.NEXT_PUBLIC_PY_API;
-                console.log(`$base`, base);
 
                 const pin = branch.boundingPins[0]
 
-                const rcCropsRes = await fetch(
-                    `${base}/recommendations?lat=${pin.coordinates.latitude}&lon=${pin.coordinates.latitude}`
-                );
+                const rcCropsRes = await fetch(`${base}/recommendations?lat=${pin.coordinates.latitude}&lon=${pin.coordinates.longitude}`);
                 const recCrops = await rcCropsRes.json()
                 console.log(`$recCrops`, recCrops);
 
-                toast.success(`${recCrops.suggestions[0]["crop_name"]} would be good in this area!`)
-
-                recSet(recCrops)
+                toast.success(`${recCrops.suggestions[Math.floor(Math.random() * recCrops.suggestions.length)]["crop_name"]} would be good in this area!`)
 
             } catch (error) {
                 consoleAndToastError(error)
@@ -240,7 +235,7 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
         addCrop(lat, lng)
     }
 
-    function getMonitorStyle(event: monitorEventType) {
+    function getMonitorStyle(event: branchEventType) {
         switch (event.typeObj.type) {
             case "temperature":
                 if (event.typeObj.temperature > 35) {
@@ -257,21 +252,6 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
             case "elevation":
                 return { fillColor: "#eab308", strokeColor: "#a16207" }
         }
-    }
-
-    async function startMic() {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-        streamRef.current = stream
-    }
-
-    function toggleMute() {
-        if (!streamRef.current) return
-
-        streamRef.current.getAudioTracks().forEach(track => {
-            track.enabled = muted // enable when unmuted
-        })
-
-        setMuted(!muted)
     }
 
     return (
@@ -291,53 +271,67 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                     <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                         <p>{branch.name}</p>
 
-                        <button
+                        <button style={{}}
                             onClick={async () => {
-                                // close previous session
-                                if (sessionRef.current) {
-                                    sessionRef.current.close()
-                                    sessionRef.current = null
+                                if (audioSession !== null) {
+                                    //close session
+                                    audioSession.close()
+
+                                    //reset
+                                    audioSessionSet(null)
+
+                                } else {
+                                    const cropsInBranch = getCropsSeenInBranch(crops, branch)
+
+                                    console.log(`$cropsInBranch`, cropsInBranch);
+
+                                    //start session
+                                    const agent = new RealtimeAgent({
+                                        name: "Assistant",
+                                        instructions: `Talk in english at all times. You are a helpful assistant. Please give advice on what crops you'd recommend planting in my areas based on all the stats.
+
+Latitude: ${seenBranch.boundingPins[0].coordinates.latitude}
+Longitude: ${seenBranch.boundingPins[0].coordinates.longitude}
+
+All Crops:
+${JSON.stringify(crops)}
+
+Crops in this farm branch:
+${JSON.stringify(cropsInBranch)}
+
+Look at any branch events as active alerts suggest ways to handle them.
+
+Branch Size:
+${getSizeFromCoords(seenBranch.boundingPins).metersSquared.toFixed(2)} meters squared.
+
+Branch Events:
+${JSON.stringify(seenBranch.branchEvents)}`,
+                                        voice: "coral"
+                                    })
+
+                                    const session = new RealtimeSession(agent, {
+                                        model: "gpt-realtime"
+                                    })
+
+                                    const seenEkKey = await makeEKKey()
+
+                                    await session.connect({ apiKey: seenEkKey })
+
+                                    // listening to the history_updated event
+                                    session.on('history_updated', (history) => {
+                                        // returns the full history of the session
+                                        console.log(history);
+                                    });
+
+                                    session.on("audio_start", (hey) => {
+                                    });
+
+                                    //set
+                                    audioSessionSet(session)
                                 }
-
-                                startMic()
-
-                                const agent = new RealtimeAgent({
-                                    name: "Assistant",
-                                    instructions: `Talk in english at all times. You are a helpful assistant. Please give advice on what crops you'd recommend planting in my areas based on all the stats
-
-                               Latitude,Longitude
-                                ${seenBranch.boundingPins[0].coordinates.latitude},${seenBranch.boundingPins[0].coordinates.longitude}
-                                
-                                Crops:
-                                ${JSON.stringify(crops)}
-
-                                Look at any branch events as active alerts suggest ways to handle them. Talk naturally and friendly.
-                                `,
-                                    voice: "coral"
-                                })
-
-                                const session = new RealtimeSession(agent, {
-                                    model: "gpt-realtime"
-                                })
-
-                                const seenEkKey = await makeEKKey()
-
-                                await session.connect({ apiKey: seenEkKey })
-
-                                // listening to the history_updated event
-                                session.on('history_updated', (history) => {
-                                    // returns the full history of the session
-                                    console.log(history);
-                                });
-
-                                sessionRef.current = session
                             }}
                         >
-                            <svg className='svgIcon' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M320 64C267 64 224 107 224 160L224 288C224 341 267 384 320 384C373 384 416 341 416 288L416 160C416 107 373 64 320 64zM176 248C176 234.7 165.3 224 152 224C138.7 224 128 234.7 128 248L128 288C128 385.9 201.3 466.7 296 478.5L296 528L248 528C234.7 528 224 538.7 224 552C224 565.3 234.7 576 248 576L392 576C405.3 576 416 565.3 416 552C416 538.7 405.3 528 392 528L344 528L344 478.5C438.7 466.7 512 385.9 512 288L512 248C512 234.7 501.3 224 488 224C474.7 224 464 234.7 464 248L464 288C464 367.5 399.5 432 320 432C240.5 432 176 367.5 176 288L176 248z" /></svg>
-                        </button>
-
-                        <button onClick={toggleMute}>
-                            {muted ? "Unmute Mic" : "Mute Mic"}
+                            <svg className='svgIcon' fill={audioSession ? "green" : ""} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M320 64C267 64 224 107 224 160L224 288C224 341 267 384 320 384C373 384 416 341 416 288L416 160C416 107 373 64 320 64zM176 248C176 234.7 165.3 224 152 224C138.7 224 128 234.7 128 248L128 288C128 385.9 201.3 466.7 296 478.5L296 528L248 528C234.7 528 224 538.7 224 552C224 565.3 234.7 576 248 576L392 576C405.3 576 416 565.3 416 552C416 538.7 405.3 528 392 528L344 528L344 478.5C438.7 466.7 512 385.9 512 288L512 248C512 234.7 501.3 224 488 224C474.7 224 464 234.7 464 248L464 288C464 367.5 399.5 432 320 432C240.5 432 176 367.5 176 288L176 248z" /></svg>
                         </button>
                     </div>
 
@@ -385,14 +379,12 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                             onClick={async () => {
                                 toast.loading("Generating recommendations...")
 
-                                const cropsInArea = crops.filter(eachCrop =>
-                                    branch.cropIds.some(eachBranchCrop => eachBranchCrop.referencedCropId === eachCrop.id)
-                                )
+                                const cropsInBranch = getCropsSeenInBranch(crops, branch)
 
                                 const newRecommendations = await makeCropRecommendations({
                                     branch,
-                                    crops: cropsInArea,
-                                    monitorEvents: branch.branchEvents
+                                    crops: cropsInBranch,
+                                    branchEvents: branch.branchEvents
                                 })
 
                                 recommendationsSet(prev => [
@@ -409,8 +401,6 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                                 {recommendations.map(eachRec => {
                                     const seenCrop = crops.find(c => c.id === eachRec.cropId)
                                     if (!seenCrop) return null
-
-                                    const type = eachRec.typeObj.type
 
                                     const badgeColors: Record<string, string> = {
                                         elevation: "bg-yellow-100 text-yellow-700",
@@ -430,9 +420,9 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                                                 </h4>
 
                                                 <span
-                                                    className={`text-xs px-2 py-1 rounded-full font-medium ${badgeColors[type]}`}
+                                                    className={`text-xs px-2 py-1 rounded-full font-medium ${badgeColors[eachRec.typeObj.type]}`}
                                                 >
-                                                    {type.replace("-", " ")}
+                                                    {eachRec.typeObj.type.replace("-", " ")}
                                                 </span>
                                             </div>
 
@@ -442,38 +432,41 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
                                             </p>
 
                                             {/* Adjustment Button (if applicable) */}
-                                            {type === "humidity" && (
-                                                <button
-                                                    className="mt-2 text-sm bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition"
-                                                    onClick={() => {
-                                                        branchSet(prevBranch => {
-                                                            const newBranch = { ...prevBranch }
+                                            <button className="mt-2 text-sm bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition"
+                                                onClick={() => {
+                                                    branchSet(prevBranch => {
+                                                        const newBranch = { ...prevBranch }
 
-                                                            //@ts-expect-error type
-                                                            newBranch.branchEvents = newBranch.branchEvents.map(eachBE => {
+                                                        newBranch.branchEvents = newBranch.branchEvents.map(eachBE => {
+                                                            //react
+                                                            eachBE = { ...eachBE }
 
-                                                                if (eachBE.typeObj.type === "humidity") {
-                                                                    return {
-                                                                        ...eachBE,
-                                                                        typeObj: {
-                                                                            ...eachBE.typeObj,
-                                                                            humidity: `${eachRec.typeObj.recommendedVal}`
-                                                                        }
-                                                                    }
-                                                                }
+                                                            //react
+                                                            eachBE.typeObj = { ...eachBE.typeObj }
 
-                                                                return eachBE
-                                                            })
+                                                            if (eachBE.typeObj.type === "humidity" && eachRec.typeObj.type === "humidity") {
+                                                                eachBE.typeObj.humidity = eachRec.typeObj.recommendedVal
 
-                                                            return newBranch
+                                                            } if (eachBE.typeObj.type === "elevation" && eachRec.typeObj.type === "elevation") {
+                                                                eachBE.typeObj.elevation = eachRec.typeObj.recommendedVal
+
+                                                            } if (eachBE.typeObj.type === "soil-condition" && eachRec.typeObj.type === "soil-condition") {
+                                                                eachBE.typeObj.status = eachRec.typeObj.recommendedVal
+
+                                                            } if (eachBE.typeObj.type === "temperature" && eachRec.typeObj.type === "temperature") {
+                                                                eachBE.typeObj.temperature = eachRec.typeObj.recommendedVal
+                                                            }
+
+                                                            return eachBE
                                                         })
 
-                                                    }}
-                                                >
-                                                    Apply Recommended Humidity
-                                                </button>
+                                                        return newBranch
+                                                    })
 
-                                            )}
+                                                }}
+                                            >
+                                                Apply Recommended
+                                            </button>
                                         </div>
                                     )
                                 })}
@@ -550,7 +543,6 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
 
 
                             {branch.branchEvents.map((event) => {
-
                                 const style = getMonitorStyle(event)
 
                                 return (

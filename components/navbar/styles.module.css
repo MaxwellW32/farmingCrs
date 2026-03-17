@@ -3,7 +3,7 @@
     text-transform: capitalize;
     background-color: var(--bg2);
     color: var(--fc1);
-    z-index: 9999;
+    z-index: 999;
 }
 
 .desktopNav {

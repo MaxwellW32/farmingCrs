@@ -9,6 +9,7 @@ import { getSpecificUser } from "@/serverFunctions/handleUsers"
 import { auth } from "@/auth/auth"
 import defaultProfilePic from "@/public/defaultProfileImage.jpg"
 import { getBranches } from "@/serverFunctions/handleBranches"
+import { getTotalAcres } from "@/utility/contextHelpers"
 
 // Sample farmer data
 // const farmerData = {
@@ -86,9 +87,9 @@ export default async function FarmerProfilePage() {
             <section>
               <StatsCards stats={{
                 totalBranches: branches.length,
-                totalAcres: branches.length * 2, //will have function to calculate acre by branch coordinates
+                totalAcres: getTotalAcres(branches),
                 yearlyYield: "12,500 tons",
-                employees: 0,
+                employees: 2,
               }} />
             </section>
 

@@ -7,6 +7,7 @@ import { auth } from "@/auth/auth"
 import { getSpecificUser } from "@/serverFunctions/handleUsers"
 import { getBranches } from "@/serverFunctions/handleBranches"
 import AddBranch from "@/components/branches/AddBranch"
+import { getSizeFromCoords, getTotalAcres } from "@/utility/contextHelpers"
 
 // Extended branch data with more details
 // const branchesData: BranchDetail[] = [
@@ -92,7 +93,7 @@ export default async function BranchesPage() {
   // Summary stats
   const summaryStats = {
     totalBranches: branches.length,
-    totalAcres: 2,
+    totalAcres: getTotalAcres(branches),
     totalEmployees: 2,
     activeBranches: branches.length,
   }

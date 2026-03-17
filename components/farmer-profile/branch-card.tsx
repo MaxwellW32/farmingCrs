@@ -9,7 +9,7 @@ import React, { useEffect, useState } from "react"
 import { getCrops } from "@/serverFunctions/handleCrops"
 import { consoleAndToastError } from "@/utility/consoleErrorWithToast"
 import Link from "next/link"
-import { coordsToString } from "@/utility/contextHelpers"
+import { coordsToString, getSizeFromCoords } from "@/utility/contextHelpers"
 
 // export interface BranchDetail {
 //   id: string
@@ -92,7 +92,7 @@ export function BranchCard({ branch }: { branch: branchType }) {
             <Sun className="size-5 text-accent" />
             <div>
               <p className="text-xs text-muted-foreground">Total Area</p>
-              <p className="font-semibold text-foreground">{2} acres</p>
+              <p className="font-semibold text-foreground">{getSizeFromCoords(branch.boundingPins).acres.toFixed(2)} acres</p>
             </div>
           </div>
           <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">

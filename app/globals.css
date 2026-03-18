@@ -245,7 +245,6 @@ body {
   width: 1rem;
   height: 1rem;
   fill: var(--shade1);
-  fill: var(--shade1);
 }
 
 .visibilityCheckbox {

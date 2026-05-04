@@ -91,30 +91,6 @@ export default function ReadBranch({ seenBranch }: { seenBranch: branchType }) {
 
     }, [])
 
-    //crop suggestions python api
-    useEffect(() => {
-        const search = async () => {
-            try {
-                //get api test
-                const base = process.env.NEXT_PUBLIC_PY_API;
-
-                const pin = branch.boundingPins[0]
-
-                const rcCropsRes = await fetch(`${base}/recommendations?lat=${pin.coordinates.latitude}&lon=${pin.coordinates.longitude}`);
-                const recCrops = await rcCropsRes.json()
-                console.log(`$recCrops`, recCrops);
-
-                toast.success(`${recCrops.suggestions[Math.floor(Math.random() * recCrops.suggestions.length)]["crop_name"]} would be good in this area!`)
-
-            } catch (error) {
-                consoleAndToastError(error)
-            }
-        }
-
-        search()
-
-    }, [])
-
     //sync branch to server
     useEffect(() => {
         try {
